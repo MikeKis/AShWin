@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+#find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
+#find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
 add_library(DVSEmulator SHARED
   DVSEmulator_global.h
@@ -18,6 +18,6 @@ add_library(DVSEmulator SHARED
   dvsemulator.h
 )
 
-target_link_libraries(DVSEmulator PRIVATE Qt${QT_VERSION_MAJOR}::Core)
+#target_link_libraries(DVSEmulator PRIVATE Qt${QT_VERSION_MAJOR}::Core)
 
-target_compile_definitions(DVSEmulator PRIVATE DVSEMULATOR_LIBRARY)
+target_compile_definitions(DVSEmulator PRIVATE DVSEMULATOR_LIBRARY FOR_LINUX)
