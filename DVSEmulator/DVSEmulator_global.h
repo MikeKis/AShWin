@@ -1,0 +1,12 @@
+#ifndef DVSEMULATOR_GLOBAL_H
+#define DVSEMULATOR_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(DVSEMULATOR_LIBRARY)
+#  define DVSEMULATOR_EXPORT Q_DECL_EXPORT
+#else
+#  define DVSEMULATOR_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // DVSEMULATOR_GLOBAL_H
