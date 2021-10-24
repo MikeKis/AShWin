@@ -6,6 +6,7 @@ project(LightSpotPassive CXX)
 ################################################################################
 set(Source_Files
     "LightSpotPassive.cpp"
+    "LightSpotPassive.h"
 )
 source_group("Source Files" FILES ${Source_Files})
 

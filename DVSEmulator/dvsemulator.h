@@ -20,6 +20,7 @@ public:
     void AddFrame(const std::vector<std::vector<unsigned char> > &vvuc_Frame, std::vector<bool> *pvb_SpikeSignal = nullptr);
     void Calibrate(float rTargetSpikeFrequency);
     void ResetCalibration(){qvvuc_forCalibration.clear();}
+    unsigned GetSpikeSignalDim() const {return vvuc_CurrentState.size() * vvuc_CurrentState.front().size() * 3;}
 };
 
 #endif // DVSEMULATOR_H

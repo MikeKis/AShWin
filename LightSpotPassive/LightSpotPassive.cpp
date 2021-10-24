@@ -14,12 +14,13 @@ Emulates signal from videocamera looking at a moving light spot.
 
 #include "AShWinCommon.h"
 
+#include "LightSpotPassive.h"
+
 #define EXACT_RASTER_SIZE 100
 #define PIXEL_SIZE (1. / EXACT_RASTER_SIZE)
 #define SPOT_SIZE 0.1
 #define CAMERA_PASSAGE_TIME_MIN_MS 300
 #define CAMERA_PASSAGE_TIME_MAX_MS 1000
-#define CAMERA_SIZE 20
 #define CAMERA_PIXEL_SIZE_PIXELS (EXACT_RASTER_SIZE / CAMERA_SIZE)
 #define LOG_INTENSITY_SENSITIVITY_THRESOLD -4.5
 #define MAX_RECEPTOR_INTENSITY_BASE 0.15
@@ -64,9 +65,7 @@ float rMakeCameraVelocity(void)
     return(1.F / i1);
 }
 
-ofstream ofsState("LightSpotPassiveState.csv");
-
-void GenerateSignals(vector<vector<unsigned char> > &vvuc_)
+void GenerateSignals(vector<vector<unsigned char> > &vvuc_, std::vector<float> &vr_PhaseSpacePoint)
 {
     static vector<vector<unsigned char> > vvuc_Last;
 	int x, y, i;
@@ -77,9 +76,15 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_)
         float rCameraMovementDirection = rng(2 * M_PI);
 		prr_CameraSpeed.first = rCameraVelocity * sin(rCameraMovementDirection);
 		prr_CameraSpeed.second = rCameraVelocity * cos(rCameraMovementDirection);
-        ofsState << "x,y,vx,vy\n";
 	}
-    ofsState << 0.5 - prr_CameraCenter.first << ',' << 0.5 - prr_CameraCenter.second << ',' << -prr_CameraSpeed.first << ',' -prr_CameraSpeed.second << endl;   // мы сохраняем координаты и скорость светового пятна в координатах неподвижной камеры (0,0) - (1,1)
+
+    // мы сохраняем координаты и скорость светового пятна в координатах неподвижной камеры (0,0) - (1,1)
+
+    vr_PhaseSpacePoint[0] = 0.5 - prr_CameraCenter.first;
+    vr_PhaseSpacePoint[1] = 0.5 - prr_CameraCenter.second;
+    vr_PhaseSpacePoint[2] = -prr_CameraSpeed.first;
+    vr_PhaseSpacePoint[3] = -prr_CameraSpeed.second;
+
 	pair<int,int> p_NewCameraLowerLeftCorner((int)((prr_CameraCenter.first + 0.5) / PIXEL_SIZE), (int)((prr_CameraCenter.second + 0.5) / PIXEL_SIZE));
 	if (p_NewCameraLowerLeftCorner != p_CameraLowerLeftCorner) {
 		p_CameraLowerLeftCorner = p_NewCameraLowerLeftCorner;
