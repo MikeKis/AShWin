@@ -9,7 +9,7 @@
 
 class DVSEMULATOR_EXPORT DVSEmulator
 {
-    std::vector<std::vector<double> >                     vdd_StateBrightness;
+    std::vector<std::vector<double> >                     vvd_StateBrightness;
     std::vector<std::vector<unsigned char> >              vvuc_CurrentState;
     double                                                dBrightnessThreshold = 1e100;
     unsigned char                                         ucChangeThreshold = 0xff;
@@ -20,7 +20,7 @@ public:
     void AddFrame(const std::vector<std::vector<unsigned char> > &vvuc_Frame, std::vector<bool> *pvb_SpikeSignal = nullptr);
     void Calibrate(float rTargetSpikeFrequency);
     void ResetCalibration(){qvvuc_forCalibration.clear();}
-    unsigned GetSpikeSignalDim() const {return vvuc_CurrentState.size() * vvuc_CurrentState.front().size() * 3;}
+    unsigned GetSpikeSignalDim() const {return vvd_StateBrightness.size() * vvd_StateBrightness.front().size() * 3;}
 };
 
 #endif // DVSEMULATOR_H

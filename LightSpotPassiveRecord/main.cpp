@@ -1,5 +1,6 @@
 #include <fstream>
 #include <string>
+#include <iostream>
 
 #include "LightSpotPassive/LightSpotPassive.h"
 #include "DVSEmulator/dvsemulator.h"
@@ -11,12 +12,14 @@ int main(int ARGC, char *ARGV[])
     SetParameters();
     DVSEmulator dve(CAMERA_SIZE, CAMERA_SIZE);
     vector<vector<unsigned char> > vvuc_;
-    vector<float> vr_PhaseSpacePoint;
+    vector<float> vr_PhaseSpacePoint(4);
     FORI(10000) {
         GenerateSignals(vvuc_, vr_PhaseSpacePoint);
         dve.AddFrame(vvuc_);
     }
+    cout << "calilbration signal generated\n";
     dve.Calibrate(0.03);
+    cout << "calilbration done\n";
     vector<bool> vb_Spikes(dve.GetSpikeSignalDim());
     auto History = atoi_s(ARGV[1]);
     ofstream ofsrec(string(ARGV[2]) + ".rec");
@@ -35,6 +38,8 @@ int main(int ARGC, char *ARGV[])
             b = true;
         }
         ofscsv << endl;
+        if (!(_i % 10000))
+            cout << _i << " tacts generated\n";
     }
     return 0;
 }

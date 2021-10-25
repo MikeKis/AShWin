@@ -20,4 +20,20 @@ add_library(DVSEmulator SHARED
 
 #target_link_libraries(DVSEmulator PRIVATE Qt${QT_VERSION_MAJOR}::Core)
 
-target_compile_definitions(DVSEmulator PRIVATE DVSEMULATOR_LIBRARY FOR_LINUX)
+################################################################################
+# Compile definitions
+################################################################################
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    "FOR_LINUX;"
+    "NDEBUG;"
+    "_USRDLL;"
+    "DVSEMULATOR_EXPORTS"
+)
+
+################################################################################
+# Output directory
+################################################################################
+set_target_properties(${PROJECT_NAME} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY    "${CMAKE_CURRENT_SOURCE_DIR}/../Workplace"
+        PREFIX ""
+)

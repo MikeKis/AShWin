@@ -5,7 +5,7 @@
 using namespace std;
 
 DVSEmulator::DVSEmulator(unsigned Width, unsigned Height, unsigned maxCalibrationSize):
-    vdd_StateBrightness(Height, vector<double>(Width, 0.)),
+    vvd_StateBrightness(Height, vector<double>(Width, 0.)),
     maxCalibrationQueueSize(maxCalibrationSize)
 {
 }
@@ -22,10 +22,10 @@ void DVSEmulator::AddFrame(const std::vector<std::vector<unsigned char> > &vvuc_
         size_t m;
         FOR_(m, vvuc_Frame.size())
             FORI(vvuc_Frame[m].size()) {
-                vdd_StateBrightness[m][_i] += vvuc_Frame[m][_i];
-                if (vdd_StateBrightness[m][_i] >= dBrightnessThreshold) {
+                vvd_StateBrightness[m][_i] += vvuc_Frame[m][_i];
+                if (vvd_StateBrightness[m][_i] >= dBrightnessThreshold) {
                     *i = true;
-                    vdd_StateBrightness[m][_i] -= dBrightnessThreshold;
+                    vvd_StateBrightness[m][_i] -= dBrightnessThreshold;
                 }
                 ++i;
             }
