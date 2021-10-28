@@ -2,6 +2,8 @@
 #include <inttypes.h>
 typedef __uint64_t UNS64;
 #define sscanf_s sscanf
+#else 
+typedef unsigned __int64 UNS64;
 #endif
 
 #define FOR_(i,a) for(i=0;i<(a);i++)

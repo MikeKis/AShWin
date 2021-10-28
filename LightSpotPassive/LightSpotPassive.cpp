@@ -12,7 +12,7 @@ Emulates signal from videocamera looking at a moving light spot.
 #include <random>
 #include <fstream>
 
-#include "AShWinCommon.h"
+#include "../AShWinCommon.h"
 
 #include "LightSpotPassive.h"
 
@@ -37,7 +37,7 @@ class RandomNumberGenerator
 public:
     RandomNumberGenerator(): urd(0., 1.) {}
     double operator()() {return urd(mt);}
-    template<class T> T operator()(T max){return (*this)() * max;}
+    template<class T> T operator()(T max){return (T)((*this)() * max);}
 };
 
 float SpotRaster[2 * SPOT_HALFSIZE_PIXEL][2 * SPOT_HALFSIZE_PIXEL];
@@ -48,13 +48,13 @@ pair<int,int> p_SpotUpperLeftCornerRelativetoCamera_pixels(0x7fffffff, 0x7ffffff
 
 RandomNumberGenerator rng;
 
-void SetParameters()
+LIGHTSPOTPASSIVE_EXPORT void SetParameters()
 {
 	int x, y;
     FOR_(x, 2 * SPOT_HALFSIZE_PIXEL)
         FOR_(y, 2 * SPOT_HALFSIZE_PIXEL) {
             double d2 = (x + 0.5 - SPOT_HALFSIZE_PIXEL) * (x + 0.5 - SPOT_HALFSIZE_PIXEL) + (y + 0.5 - SPOT_HALFSIZE_PIXEL) * (y + 0.5 - SPOT_HALFSIZE_PIXEL);
-            SpotRaster[x][y] = exp(-d2 * dPixelSize * dPixelSize/ (2 * dSpotSize * dSpotSize));
+            SpotRaster[x][y] = (float)exp(-d2 * dPixelSize * dPixelSize/ (2 * dSpotSize * dSpotSize));
 		}
 }
 
@@ -68,17 +68,17 @@ float rMakeSpotVelocity(void)
     return(1.F / i1);
 }
 
-void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_PhaseSpacePoint)
+LIGHTSPOTPASSIVE_EXPORT void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_PhaseSpacePoint)
 {
     static vector<vector<unsigned char> > vvuc_Last(CAMERA_SIZE, vector<unsigned char>(CAMERA_SIZE));
-	int x, y, i;
+	int x, y;
 	if (prr_CameraCenter.first == -1) {
-		prr_CameraCenter.first = -0.5 + rng();
-		prr_CameraCenter.second = -0.5 + rng();
-        prr_SpotCenter.first = -0.5 + rng();
-        prr_SpotCenter.second = -0.5 + rng();
+		prr_CameraCenter.first = (float)(-0.5 + rng());
+		prr_CameraCenter.second = (float)(-0.5 + rng());
+        prr_SpotCenter.first = (float)(-0.5 + rng());
+        prr_SpotCenter.second = (float)(-0.5 + rng());
         float rSpotVelocity = rMakeSpotVelocity();
-        float rSpotMovementDirection = rng(2 * M_PI);
+        float rSpotMovementDirection = (float)rng(2 * M_PI);
         prr_SpotSpeed.first = rSpotVelocity * sin(rSpotMovementDirection);
         prr_SpotSpeed.second = rSpotVelocity * cos(rSpotMovementDirection);
 	}
@@ -120,7 +120,7 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_Ph
                 if (d) {
                     d /= CameraPixelSize_pixels * CameraPixelSize_pixels;
                     auto d2 = log(d);
-                    vvuc_Last[y][x] = d2 < dlogIntensitySensitivityThreshold ? 0. : (dlogIntensitySensitivityThreshold - d2) / dlogIntensitySensitivityThreshold * 255;
+                    vvuc_Last[y][x] = d2 < dlogIntensitySensitivityThreshold ? 0 : (unsigned char)((dlogIntensitySensitivityThreshold - d2) / dlogIntensitySensitivityThreshold * 255);
                 } else vvuc_Last[y][x] = 0;
 			}
 	}
@@ -129,31 +129,31 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_Ph
     if (prr_SpotCenter.first < -1.) {
         prr_SpotCenter.first = (float)(-1. + dPixelSize / 2);
         float rVelocity = rMakeSpotVelocity();
-        float rMovementDirection = rng(M_PI);
-        prr_SpotSpeed.first = rVelocity * sin(rMovementDirection);
-        prr_SpotSpeed.second = rVelocity * cos(rMovementDirection);
+        auto rMovementDirection = rng(M_PI);
+        prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
+        prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
     if (prr_SpotCenter.first >= 1.) {
         prr_SpotCenter.first = (float)(1. - dPixelSize / 2);
         float rVelocity = rMakeSpotVelocity();
-        float rMovementDirection = M_PI + rng(M_PI);
-        prr_SpotSpeed.first = rVelocity * sin(rMovementDirection);
-        prr_SpotSpeed.second = rVelocity * cos(rMovementDirection);
+		auto rMovementDirection = M_PI + rng(M_PI);
+        prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
+        prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
     prr_SpotCenter.second += prr_SpotSpeed.second;
     if (prr_SpotCenter.second < -1.) {
         prr_SpotCenter.second = (float)(-1. + dPixelSize / 2);
         float rVelocity = rMakeSpotVelocity();
-        float rMovementDirection = rng(M_PI) - M_PI / 2;
-        prr_SpotSpeed.first = rVelocity * sin(rMovementDirection);
-        prr_SpotSpeed.second = rVelocity * cos(rMovementDirection);
+		auto rMovementDirection = rng(M_PI) - M_PI / 2;
+        prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
+        prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
     if (prr_SpotCenter.second >= 0.5) {
         prr_SpotCenter.second = (float)(0.5 - dPixelSize / 2);
         float rVelocity = rMakeSpotVelocity();
-        float rMovementDirection = M_PI / 2 + rng(M_PI);
-        prr_SpotSpeed.first = rVelocity * sin(rMovementDirection);
-        prr_SpotSpeed.second = rVelocity * cos(rMovementDirection);
+		auto rMovementDirection = M_PI / 2 + rng(M_PI);
+        prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
+        prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
 }
 

@@ -1,72 +1,56 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct 27 11:20:55 2021
-
-@author: mike
-"""
-
 import os
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
 
-# importing movie py libraries
-from moviepy.editor import VideoClip
-from moviepy.video.io.bindings import mplfig_to_npimage
-
 N = 20
 M = 20
 
-lines = None
+tactStart = 400
+tactEnd = 500
+
+video_file = 'DVSspikes.mp4'
 
 with open('passive.rec') as file:
- # lines = file.read().splitlines()
- lines = file.readlines()
- print('Number of lines:', len(lines))
+    str = file.readline()
+    file.seek(len(str) * tactStart)
 
+    files = []
+    fig, ax = plt.subplots(figsize=(5, 5))
 
+    for i in range(tactStart, tactEnd):
+        line = file.readline()
+        line = line[:-1]
+
+        line_numbers = []
+        for k, ch in enumerate(line):
+            if ch == '.':
+                line_numbers.append(0)
+            else:
+                line_numbers.append(255)
+
+        length = len(line_numbers) // 3
+
+        rastr = np.array(line_numbers[:length])
+        delta_plus = np.array(line_numbers[length:2*length])
+        delta_minus = np.array(line_numbers[2*length:3*length])
+
+        img_final = np.array([rastr, delta_plus, delta_minus]).transpose().reshape(N, M, 3)
  
-fig, ax = plt.subplots(figsize=(5, 5))
+
+        plt.imshow(img_final)
+
+        fname = "tmp-%d.png" % i
+        print('Saving frame', fname)
+        plt.savefig(fname)
+        files.append(fname)
+
+    print('Making movie animation.mpg - this may take a while')
+    subprocess.call(['ffmpeg', '-framerate', '8', '-start_number', f'{tactStart}', '-i', 'tmp-%d.png', '-r', '30', '-pix_fmt', 'yuv420p', video_file])
+
+    os.system(video_file)
+
+    for fname in files:
+        os.remove(fname)
 
 
-def make_frame(t):
- t = int(t * 10)
- print(t)
- line = lines[t][:-1]
-
- line_numbers = []
- for k, i in enumerate(line):
-  if i == '.':
-   line_numbers.append(0)
-  else:
-   line_numbers.append(255)
-
- length = len(line_numbers) // 3
- # print(length, len(line))
- # print(line)
-
- rastr = np.array(line_numbers[:length]).reshape(N, M)
- delta_minus = np.array(line_numbers[length:2*length]).reshape(N, M)
- delta_plus = np.array(line_numbers[2*length:3*length]).reshape(N, M)
-
- img_final = np.array([rastr, delta_minus, delta_plus]).reshape(N, M, 3)
-
- return img_final
- # plt.imshow(img_final)
-
- # fname = f'_tmp{ln}.png'
- # print('Saving frame', fname)
- # plt.savefig(fname)
- # files.append(fname)
-
-
-# creating animation
-animation = VideoClip(make_frame, duration=20)
- 
-# displaying animation with auto play and looping
-animation.ipython_display(fps=10, loop = True, autoplay = True)
-
-# cleanup
-'''for fname in files:
-    os.remove(fname)'''
