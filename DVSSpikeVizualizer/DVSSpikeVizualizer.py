@@ -10,16 +10,17 @@ tactStart = 400
 tactEnd = 500
 
 video_file = 'DVSspikes.mp4'
+files = []
 
-with open('passive.rec') as file:
-    str = file.readline()
-    file.seek(len(str) * tactStart)
+def process(file, n, n1st):
+    file.seek(n * tactStart)
 
-    files = []
     fig, ax = plt.subplots(figsize=(5, 5))
 
     for i in range(tactStart, tactEnd):
         line = file.readline()
+        if len(line) != n1st:
+            return False
         line = line[:-1]
 
         line_numbers = []
@@ -44,13 +45,21 @@ with open('passive.rec') as file:
         print('Saving frame', fname)
         plt.savefig(fname)
         files.append(fname)
+    return True
 
-    print('Making movie animation.mpg - this may take a while')
-    subprocess.call(['ffmpeg', '-framerate', '8', '-start_number', f'{tactStart}', '-i', 'tmp-%d.png', '-r', '30', '-pix_fmt', 'yuv420p', video_file])
+with open('passive.rec') as file:
+    str = file.readline()
+    n = len(str)
+    if not process(file, n, n) and not process(file, n + 1, n):
+        print("Corrupt rec file!")
+        exit(-1)
 
-    os.system(video_file)
+print('Making movie animation.mpg - this may take a while')
+subprocess.call(['ffmpeg', '-framerate', '8', '-start_number', f'{tactStart}', '-i', 'tmp-%d.png', '-r', '30', '-pix_fmt', 'yuv420p', video_file])
 
-    for fname in files:
-        os.remove(fname)
+for fname in files:
+    os.remove(fname)
+
+os.system(video_file)
 
 

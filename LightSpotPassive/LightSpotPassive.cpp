@@ -20,7 +20,7 @@ Emulates signal from videocamera looking at a moving light spot.
 #define SPOT_HALFSIZE_PIXEL 30
 const unsigned ExactRasterSize = 100;
 const double dPixelSize =  1. / ExactRasterSize;
-const double dSpotSize = 0.1;
+const double dSpotSize = 0.01;
 const unsigned CameraPixelSize_pixels = ExactRasterSize / CAMERA_SIZE;
 const double dSpotHalfsize = SPOT_HALFSIZE_PIXEL * dPixelSize;
 const double dlogIntensitySensitivityThreshold = pow(dSpotHalfsize / dSpotSize, 2) * -0.5;

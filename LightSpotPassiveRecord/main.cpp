@@ -18,7 +18,7 @@ int main(int ARGC, char *ARGV[])
         dve.AddFrame(vvuc_);
     }
     cout << "calilbration signal generated\n";
-    dve.Calibrate(0.03);
+    dve.Calibrate(0.003F);
     cout << "calilbration done\n";
     vector<bool> vb_Spikes(dve.GetSpikeSignalDim());
     auto History = atoi_s(ARGV[1]);
