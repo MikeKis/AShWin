@@ -13,4 +13,3 @@ link_directories(/usr/local/lib) #it is - to find boost!
 
 add_subdirectory(DVSEmulator)
 add_subdirectory(LightSpotPassive)
-add_subdirectory(LightSpotPassiveRecord)
