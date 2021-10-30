@@ -2,8 +2,8 @@
 #include <string>
 #include <iostream>
 
-#include "../LightSpotPassive/LightSpotPassive.h"
-#include "../DVSEmulator/dvsemulator.h"
+#include "../../LightSpotPassive/LightSpotPassive.h"
+#include "../../DVSEmulator/dvsemulator.h"
 
 using namespace std;
 

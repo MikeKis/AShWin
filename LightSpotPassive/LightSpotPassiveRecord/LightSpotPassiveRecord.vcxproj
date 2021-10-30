@@ -156,10 +156,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DVSEmulator\DVSEmulator.vcxproj">
+    <ProjectReference Include="..\..\DVSEmulator\DVSEmulator.vcxproj">
       <Project>{12473ce3-f7f3-4d22-bcd7-a9489e48a9f9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\LightSpotPassive\LightSpotPassive.vcxproj">
+    <ProjectReference Include="..\LightSpotPassive.vcxproj">
       <Project>{3edd14c6-c38f-473a-b0dd-2b1c6e951fcf}</Project>
     </ProjectReference>
   </ItemGroup>
