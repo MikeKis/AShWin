@@ -32,6 +32,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 # Output directory
 ################################################################################
 set_target_properties(${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY    "${CMAKE_CURRENT_SOURCE_DIR}/../Workplace"
+        RUNTIME_OUTPUT_DIRECTORY    "${CMAKE_CURRENT_SOURCE_DIR}/../../Workplace"
         PREFIX ""
 )
