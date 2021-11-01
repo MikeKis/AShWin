@@ -23,7 +23,7 @@
         <MIGRATION>INSIDE</MIGRATION>
       </props>
     </Section>
-    <Link from="R" to="W" policy="all-to-all">
+    <Link from="R" to="W">
       <DELAY Type="UNI">
           <min>1</min>
           <max>1</max>
