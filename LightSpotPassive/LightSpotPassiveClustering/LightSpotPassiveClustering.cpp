@@ -8,6 +8,7 @@
 #include <utility>
 #include <sstream>
 #include <array>
+#include <math.h>
 
 #include "../../AShWinCommon.h"
 
