@@ -61,6 +61,7 @@ double devaluate(int ind, const VECTOR<PAIR<float,VECTOR<PAIR<int,bool> > > > &v
 	SUBGENE(RELWEIGHTDEC);
 	SUBGENE(WEIGHTINH);
 	SUBGENE(ININON0WEIGHTPART);
+	SUBGENE(PAFFERENT);
 	float rAfferentIniWeight, rAfferentMaxWeight = 0;
 	double dAfferentEffWeight = GV(INIWEIGHT);
 	rAfferentMaxWeight = GV(MAXWEIGHT);
