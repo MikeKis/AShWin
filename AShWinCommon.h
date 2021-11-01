@@ -2,7 +2,7 @@
 #include <inttypes.h>
 typedef __uint64_t UNS64;
 #define sscanf_s sscanf
-#define DYNAMIC_LIBRARY_ENTRY_POINT
+#define DYNAMIC_LIBRARY_ENTRY_POINT extern "C"
 #else 
 typedef unsigned __int64 UNS64;
 #define DYNAMIC_LIBRARY_ENTRY_POINT __declspec(dllexport)
