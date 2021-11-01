@@ -39,13 +39,11 @@
       <MAXWEIGHT>$(WEIGHTINH)</MAXWEIGHT>
     </Link>
   </Sections>
-  <Readout lib="SimpleClassifier">
+  <Readout lib="LightSpotPassiveClustering">
     <args>
-      <target n="10">$(TARGET_FILE)</target>
-      <start_time>$(LEARNING_PERIOD)</start_time>
+      <start_time>$(LEARNING_PERIOD)</start_time> 
       <operation_time>$(TESTING_PERIOD)</operation_time>
-    </args>
-    <args>
+      <measurement_time>$(MEASUREMENT_PERIOD)</measurement_time>
     </args>
   </Readout>
 </Network>  

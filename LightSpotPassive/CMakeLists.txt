@@ -74,3 +74,4 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         )
 
 add_subdirectory(LightSpotPassiveRecord)
+add_subdirectory(LightSpotPassiveClustering)
