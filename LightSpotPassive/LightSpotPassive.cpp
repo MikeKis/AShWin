@@ -148,8 +148,8 @@ LIGHTSPOTPASSIVE_EXPORT void GenerateSignals(vector<vector<unsigned char> > &vvu
         prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
         prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
-    if (prr_SpotCenter.second >= 0.5) {
-        prr_SpotCenter.second = (float)(0.5 - dPixelSize / 2);
+    if (prr_SpotCenter.second >= 1.) {
+        prr_SpotCenter.second = (float)(1. - dPixelSize / 2);
         float rVelocity = rMakeSpotVelocity();
 		auto rMovementDirection = M_PI / 2 + rng(M_PI);
         prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));

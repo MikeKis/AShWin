@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightSpotPassiveRecord", "L
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "LightSpotPassiveResult", "LightSpotPassive\LightSpotPassiveResult\LightSpotPassiveResult.pyproj", "{E8E65B0D-830D-48EB-9252-D2B569577D0F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightSpotPassiveClustering", "LightSpotPassive\LightSpotPassiveClustering\LightSpotPassiveClustering.vcxproj", "{C22D591A-D72C-456F-BF8B-C1494C540A11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,16 @@ Global
 		{E8E65B0D-830D-48EB-9252-D2B569577D0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8E65B0D-830D-48EB-9252-D2B569577D0F}.Release|x64.ActiveCfg = Release|Any CPU
 		{E8E65B0D-830D-48EB-9252-D2B569577D0F}.Release|x86.ActiveCfg = Release|Any CPU
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Debug|x64.ActiveCfg = Debug|x64
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Debug|x64.Build.0 = Debug|x64
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Debug|x86.ActiveCfg = Debug|Win32
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Debug|x86.Build.0 = Debug|Win32
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Release|Any CPU.ActiveCfg = Release|Win32
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Release|x64.ActiveCfg = Release|x64
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Release|x64.Build.0 = Release|x64
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Release|x86.ActiveCfg = Release|Win32
+		{C22D591A-D72C-456F-BF8B-C1494C540A11}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,6 +87,7 @@ Global
 		{3EDD14C6-C38F-473A-B0DD-2B1C6E951FCF} = {5C67F111-C389-4D13-B499-500D91C17D6E}
 		{E5DBE6C9-9752-4C9B-BD52-A04758EDFB47} = {5C67F111-C389-4D13-B499-500D91C17D6E}
 		{E8E65B0D-830D-48EB-9252-D2B569577D0F} = {5C67F111-C389-4D13-B499-500D91C17D6E}
+		{C22D591A-D72C-456F-BF8B-C1494C540A11} = {5C67F111-C389-4D13-B499-500D91C17D6E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4A2DA237-49E5-43AA-A1E5-FB49DAF7D5CB}

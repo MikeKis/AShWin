@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Network>
+  <Global>$(INACTIVESTRONGSYNAPSESUPPRESSION)</Global>
+  <Global>$(PLASTICITYCHARTIMERATIO)</Global>
+  <Receptors name="R" N="$(NRECEPTORS)">
+    <Implementation lib="fromFile">
+      <args>
+        <source>$(INPUT_SIGNAL_FILE)</source>
+      </args>
+    </Implementation>
+  </Receptors>
+  <Sections>
+    <Section name="-W">
+      <props>
+        <N>$(NNEU)</N>
+        <Structure Type="W">
+        </Structure>
+        <CHARTIME>$(CHARTIME)</CHARTIME>
+        <WEIGHTINC>1</WEIGHTINC>
+        <RELWEIGHTDEC>$(RELWEIGHTDEC)</RELWEIGHTDEC>
+        <THRESHOLDDECAYPERIOD>1</THRESHOLDDECAYPERIOD>
+        <THRESHOLDINC>0</THRESHOLDINC>
+        <MIGRATION>INSIDE</MIGRATION>
+      </props>
+    </Section>
+    <Link from="R" to="W" policy="all-to-all">
+      <DELAY Type="UNI">
+          <min>1</min>
+          <max>1</max>
+      </DELAY>
+      <MAXWEIGHT>$(MAXWEIGHT)</MAXWEIGHT>
+      <INIWEIGHT Type="DIS">
+        <default>0</default>
+        <value v="$(INIWEIGHT)" share="$(ININON0WEIGHTPART)"></value>
+      </INIWEIGHT>
+      <probability>$(PAFFERENT)</probability>
+    </Link>
+    <Link from="W" to="W" policy="WTA">
+      <MAXWEIGHT>$(WEIGHTINH)</MAXWEIGHT>
+    </Link>
+  </Sections>
+  <Readout lib="SimpleClassifier">
+    <args>
+      <target n="10">$(TARGET_FILE)</target>
+      <start_time>$(LEARNING_PERIOD)</start_time>
+      <operation_time>$(TESTING_PERIOD)</operation_time>
+    </args>
+    <args>
+    </args>
+  </Readout>
+</Network>  

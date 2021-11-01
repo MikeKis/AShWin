@@ -16,7 +16,7 @@ import numpy as nmp
 
 video_file = 'StableWeights.mp4'
 
-id = 2002
+id = 2003
 nreceptors = 1200
 ncopies = 6
 nneu = 30

@@ -1,0 +1,6 @@
+LIBRARY	"LightSpotPassiveClustering"
+EXPORTS
+SetParameters=?SetParameters@@YAXH_KAEBVxml_node@pugi@@@Z
+ObtainOutputSpikes=?ObtainOutputSpikes@@YA_NAEBV?$vector@HV?$allocator@H@std@@@std@@H@Z
+Finalize=?Finalize@@YAHH@Z
+ 
