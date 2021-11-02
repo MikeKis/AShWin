@@ -1,16 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(LightSpotPassiveClustering LANGUAGES CXX)
+project(LightSpotPassiveClustering CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-add_library(LightSpotPassiveClustering SHARED
-  LightSpotPassiveClustering.cpp
+add_library(${PROJECT_NAME} SHARED
+  "LightSpotPassiveClustering.cpp"
+  "../../pugixml-1.10/src/pugixml.cpp"
 )
  
 ################################################################################
@@ -20,7 +14,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     "FOR_LINUX;"
     "NDEBUG;"
     "_USRDLL;"
-    "DVSEMULATOR_EXPORTS"
 )
 
 ################################################################################
