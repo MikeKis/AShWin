@@ -44,6 +44,7 @@
       <start_time>$(LEARNING_PERIOD)</start_time> 
       <operation_time>$(TESTING_PERIOD)</operation_time>
       <measurement_time>$(MEASUREMENT_PERIOD)</measurement_time>
+      <time_quant>$(RECOGNITION_MEASUREMENT_QUANTUM)</time_quant>
     </args>
   </Readout>
 </Network>  
