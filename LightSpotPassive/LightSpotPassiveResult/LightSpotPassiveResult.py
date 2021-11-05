@@ -3,6 +3,7 @@
 import csv
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.colors import NoNorm
 import math
 import os
 import subprocess
@@ -13,13 +14,83 @@ import ipywidgets as widgets
 import copy
 import sys
 import numpy as nmp
+from readpro import readpro
 
 video_file = 'StableWeights.mp4'
 
-id = 2003
+id = 3000
 nreceptors = 1200
-ncopies = 6
-nneu = 30
+ncopies = 3
+nneu = 98
+show_protocol = True
+
+
+if show_protocol:
+
+    start_tact = 2600000
+    end_tact = 3000000
+
+    pro = readpro(R"spikes.%d.txt" % id, start_tact, end_tact - start_tact, nneu)
+
+    print("protocol read")
+
+    phase_points = [[], [], [], []]
+    with open("passive.csv", "r") as fil:
+        csr = csv.reader(fil)
+        tact = 0
+        for row in csr:
+            if tact >= start_tact:
+                for i in range(4):
+                    phase_points[i].append(float(row[i]))
+            tact += 1
+
+    print("phase points read")
+
+    fig1, ax1 = plt.subplots()
+
+    def DrawPhasePoints(neurons):
+        X = []
+        Y = []
+        U = []
+        V = []
+        C = []
+        cval = 0.5
+        cstep = 1.001
+        vrel = 30
+        for i in neurons:
+            for j in i:
+                C.append(cval)
+                X.append(phase_points[0][j])
+                Y.append(phase_points[1][j])
+                U.append(phase_points[2][j] * vrel)
+                V.append(phase_points[3][j] * vrel)
+            cval += cstep
+            if cval > 1.:
+                cstep *= 0.5
+                cval = cstep * 0.5
+        ax1.clear()
+        ax1.set_xlim(-1., 1)
+        ax1.set_ylim(-1., 1)
+        ax1.set_box_aspect(1)
+        ax1.grid(True)
+        norm = NoNorm()
+        Q = ax1.quiver(X, Y, U, V, C, units='x', cmap = 'hsv', norm = norm)
+
+    DrawPhasePoints(pro[:1])
+
+    axcolor = 'lightgoldenrodyellow'
+    axfreq = plt.axes([0.25, 0.01, 0.65, 0.02], facecolor=axcolor)
+
+    neuron_slider = Slider(ax = axfreq, label = 'neurons', valmin = 1, valmax = nneu - 1, valinit = 1, valfmt = "%d", valstep = 1)
+
+    def update_sli(val):
+        DrawPhasePoints(pro[:val])
+
+    neuron_slider.on_changed(update_sli)
+
+    plt.show()
+
+    exit(0)
 
 p = subprocess.Popen(["ArNIResults", "%d" % id])
 p.communicate()
