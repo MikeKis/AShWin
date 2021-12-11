@@ -12,4 +12,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 { 
 	string strSavedNetwork = xn.child_value("Saved");
 	inc.LoadNetwork(strSavedNetwork);
+	auto Sections = xn.child("Sections");
+	for (pugi::xml_node section = Sections.child("Section"); section; section = section.next_sibling("Section")) 
+		inc.CreatePopulation(section);
 }
