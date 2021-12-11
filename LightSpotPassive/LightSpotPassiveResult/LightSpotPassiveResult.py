@@ -18,11 +18,11 @@ from readpro import readpro
 
 video_file = 'StableWeights.mp4'
 
-id = 3000
+id = 2002
 nreceptors = 1200
-ncopies = 3
-nneu = 98
-show_protocol = True
+ncopies = 9
+nneu = 89
+show_protocol = False
 
 
 if show_protocol:

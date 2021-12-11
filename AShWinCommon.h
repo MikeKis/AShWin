@@ -13,6 +13,7 @@ typedef unsigned __int64 UNS64;
 #define FOR_(i,a) for(i=0;i<(a);i++)
 #define FORI(N) for(UNS64 _i = 0; _i < (UNS64)(N); _i++)
 
+#ifndef FUNS64
 inline int atoi_s(const char *pch)
 {
     if (!*pch)
@@ -22,3 +23,4 @@ inline int atoi_s(const char *pch)
         throw std::runtime_error("int format conversion error");
     return ret;
 }
+#endif

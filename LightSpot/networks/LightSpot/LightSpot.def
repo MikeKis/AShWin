@@ -1,0 +1,4 @@
+LIBRARY	"LightSpot"
+EXPORTS
+SetParameters=?SetParameters@@YAXAEBVxml_node@pugi@@AEBUINetworkConfigurator@@@Z
+ 
