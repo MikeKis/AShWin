@@ -24,4 +24,5 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	FORI(nWTANeurons)
 		inc.bConnectNeurons((unsigned)_i, (unsigned)(_i + nWTANeurons), pilpULMEMLink);
 	inc.DestroyProjection(pilpULMEMLink);
+	inc.FinalizePoplulation(ULMEMPopulation);
 }
