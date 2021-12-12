@@ -21,6 +21,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto ULMEMPopulation = inc.CreatePopulation(section);
 	auto ULMEMLink = Sections.child("Link");
 	auto pilpULMEMLink = inc.pilpCreateProjection(ULMEMLink, false);
-
+	FORI(nWTANeurons)
+		inc.bConnectNeurons((unsigned)_i, (unsigned)(_i + nWTANeurons), pilpULMEMLink);
 	inc.DestroyProjection(pilpULMEMLink);
 }
