@@ -1,3 +1,5 @@
+#include <string>
+
 #ifdef FOR_LINUX
 #include <inttypes.h>
 typedef __uint64_t UNS64;
@@ -24,3 +26,13 @@ inline int atoi_s(const char *pch)
     return ret;
 }
 #endif
+
+inline std::string str(int i) {
+	char buf[30];
+#ifndef FOR_LINUX
+	sprintf_s(buf, sizeof(buf), "%d", i);
+#else
+	sprintf(buf, "%d", i);
+#endif
+	return(std::string(buf));
+}

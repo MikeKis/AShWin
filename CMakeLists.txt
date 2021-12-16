@@ -9,7 +9,9 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(.)
 include_directories(DVSEmulator)
+include_directories(../ArNI)
 link_directories(/usr/local/lib) #it is - to find boost!
 
 add_subdirectory(DVSEmulator)
 add_subdirectory(LightSpotPassive)
+add_subdirectory(LightSpot)
