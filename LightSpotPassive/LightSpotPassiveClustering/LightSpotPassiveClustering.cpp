@@ -28,7 +28,7 @@ int TimeQuant = 30;
 double derr2 = 0.;
 int nGoodQuants = 0;
 
-DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn)
+DYNAMIC_LIBRARY_ENTRY_POINT void SetParametersOut(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn)
 {
 	auto starttime = xn.child("start_time");
 	StartTime = 0;
