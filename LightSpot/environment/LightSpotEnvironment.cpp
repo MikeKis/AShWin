@@ -14,8 +14,14 @@ Emulates signal from videocamera looking at a moving light spot.
 #include <random>
 #include <fstream>
 #include <vector>
+#include <iostream>
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+
+#include <sg.h>
 
 #include "../../AShWinCommon.h"
+#include "../../DVSEmulator/dvsemulator.h"
 
 #ifdef FOR_LINUX
 #define LIGHTSPOTENVIRONMENT_EXPORT
@@ -24,6 +30,7 @@ Emulates signal from videocamera looking at a moving light spot.
 #endif
 
 using namespace std;
+using namespace boost::interprocess;
 
 #define CAMERA_SIZE 20
 #define SPOT_HALFSIZE_PIXEL 30
@@ -38,6 +45,11 @@ const unsigned minSpotPassageTime_ms = 100;
 const unsigned maxSpotPassageTime_ms = 300;
 
 const double dFriction = 0.03;
+const float rSpikeEffect = 0.1F;
+const double dTargetRange = 0.15;
+const int TargetReachedSpikePeriod = 6;
+
+const double dDistanceChangeThreshold = 0.03;
 
 class RandomNumberGenerator
 {
@@ -46,27 +58,34 @@ class RandomNumberGenerator
 public:
 	RandomNumberGenerator() : urd(0., 1.) {}
 	double operator()() { return urd(mt); }
-	template<class T> T operator()(T max) { return (T)((*this)() * max); }
+	template<class T> T operator()(T max) {return (T)((*this)() * max);}
+	void Randomize(void)
+	{
+		mt19937_64 mtRandomized(std::random_device{}());
+		mt = mtRandomized;
+	}
 };
 
 float SpotRaster[2 * SPOT_HALFSIZE_PIXEL][2 * SPOT_HALFSIZE_PIXEL];
-pair<float, float> prr_CameraCenter(-1.F, -1.F);
-pair<float, float> prr_SpotCenter(-1.F, -1.F);
+
+#define ENVIRONMENT_STATE_SHARED_MEMORY_NAME "LightSpotEnvironment.sm"
+
+struct EnvironmentState
+{
+	pair<float, float> *pprr_CameraCenter = NULL;
+	pair<float, float> *pprr_SpotCenter = NULL;
+	~EnvironmentState()	{shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);}
+	double dDistance() const 
+	{
+		return sqrt((pprr_CameraCenter->first - pprr_SpotCenter->first) * (pprr_CameraCenter->second - pprr_SpotCenter->second) +	(pprr_CameraCenter->second - pprr_SpotCenter->second) * (pprr_CameraCenter->second - pprr_SpotCenter->second));
+	}
+} es;
+
 pair<float, float> prr_SpotSpeed;
 pair<float, float> prr_CameraSpeed(0.F, 0.F);
 pair<int, int> p_SpotUpperLeftCornerRelativetoCamera_pixels(0x7fffffff, 0x7fffffff);
 
 RandomNumberGenerator rng;
-
-LIGHTSPOTENVIRONMENT_EXPORT void SetParametersIn()
-{
-	int x, y;
-	FOR_(x, 2 * SPOT_HALFSIZE_PIXEL)
-		FOR_(y, 2 * SPOT_HALFSIZE_PIXEL) {
-			double d2 = (x + 0.5 - SPOT_HALFSIZE_PIXEL) * (x + 0.5 - SPOT_HALFSIZE_PIXEL) + (y + 0.5 - SPOT_HALFSIZE_PIXEL) * (y + 0.5 - SPOT_HALFSIZE_PIXEL);
-			SpotRaster[x][y] = (float)exp(-d2 * dPixelSize * dPixelSize / (2 * dSpotSize * dSpotSize));
-		}
-}
 
 float rMakeSpotVelocity(void)
 {
@@ -78,33 +97,49 @@ float rMakeSpotVelocity(void)
 	return(1.F / i1);
 }
 
-LIGHTSPOTENVIRONMENT_EXPORT void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_PhaseSpacePoint)
+void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_PhaseSpacePoint)
 {
 	static vector<vector<unsigned char> > vvuc_Last(CAMERA_SIZE, vector<unsigned char>(CAMERA_SIZE));
 	int x, y;
-	if (prr_CameraCenter.first == -1) {
-		prr_CameraCenter.first = (float)(-0.5 + rng());
-		prr_CameraCenter.second = (float)(-0.5 + rng());
-		prr_SpotCenter.first = (float)(-0.5 + rng());
-		prr_SpotCenter.second = (float)(-0.5 + rng());
-		float rSpotVelocity = rMakeSpotVelocity();
-		float rSpotMovementDirection = (float)rng(2 * M_PI);
-		prr_SpotSpeed.first = rSpotVelocity * sin(rSpotMovementDirection);
-		prr_SpotSpeed.second = rSpotVelocity * cos(rSpotMovementDirection);
+	if (!es.pprr_CameraCenter) {
+		try {
+			//Create a shared memory object.
+			shared_memory_object shm(create_only, ENVIRONMENT_STATE_SHARED_MEMORY_NAME, read_write);
+
+			//Set size
+			shm.truncate(sizeof(pair<pair<float, float>, pair<float, float> >));
+
+			//Map the whole shared memory in this process
+			mapped_region region(shm, read_write);
+			es.pprr_CameraCenter = (pair<float, float> *)region.get_address();
+			es.pprr_SpotCenter = &((pair<pair<float, float>, pair<float, float> > *)es.pprr_CameraCenter)->second;
+			es.pprr_CameraCenter->first = (float)(-0.5 + rng());
+			es.pprr_CameraCenter->second = (float)(-0.5 + rng());
+			es.pprr_SpotCenter->first = (float)(-1. + 2 * rng());
+			es.pprr_SpotCenter->second = (float)(-1 + 2 * rng());
+			float rSpotVelocity = rMakeSpotVelocity();
+			float rSpotMovementDirection = (float)rng(2 * M_PI);
+			prr_SpotSpeed.first = rSpotVelocity * sin(rSpotMovementDirection);
+			prr_SpotSpeed.second = rSpotVelocity * cos(rSpotMovementDirection);
+		}
+		catch (...) {
+			cout << "Only one light spot environment per system is allowed!\n";
+			exit(-1);
+		}
 	}
 
 	// мы сохраняем координаты и скорость светового пятна в координатах камеры
 
-	vr_PhaseSpacePoint[0] = prr_SpotCenter.first - prr_CameraCenter.first;
-	vr_PhaseSpacePoint[1] = prr_SpotCenter.second - prr_CameraCenter.second;
+	vr_PhaseSpacePoint[0] = es.pprr_SpotCenter->first - es.pprr_CameraCenter->first;
+	vr_PhaseSpacePoint[1] = es.pprr_SpotCenter->second - es.pprr_CameraCenter->second;
 	vr_PhaseSpacePoint[2] = prr_SpotSpeed.first;
 	vr_PhaseSpacePoint[3] = prr_SpotSpeed.second;
 
 	// Это координаты верхнего левого угла картинки пятна относительно верхнего правого угла камеры. Учитываем, что пихельная Y-координата идет против метрической координаты (сверху вниз)!
 
 	pair<int, int> p_NewSpotUpperLeftCornerRelativetoCamera_pixels(
-		(int)((prr_SpotCenter.first - dSpotHalfsize - (prr_CameraCenter.first - 0.5)) / dPixelSize),
-		(int)((prr_CameraCenter.second + 0.5 - (prr_SpotCenter.second + dSpotHalfsize)) / dPixelSize)
+		(int)((es.pprr_SpotCenter->first - dSpotHalfsize - (es.pprr_CameraCenter->first - 0.5)) / dPixelSize),
+		(int)((es.pprr_CameraCenter->second + 0.5 - (es.pprr_SpotCenter->second + dSpotHalfsize)) / dPixelSize)
 	);
 
 	if (p_NewSpotUpperLeftCornerRelativetoCamera_pixels != p_SpotUpperLeftCornerRelativetoCamera_pixels) {
@@ -136,52 +171,52 @@ LIGHTSPOTENVIRONMENT_EXPORT void GenerateSignals(vector<vector<unsigned char> > 
 		}
 	}
 	vvuc_ = vvuc_Last;
-	prr_SpotCenter.first += prr_SpotSpeed.first;
-	if (prr_SpotCenter.first < -1.) {
-		prr_SpotCenter.first = (float)(-1. + dPixelSize / 2);
+	es.pprr_SpotCenter->first += prr_SpotSpeed.first;
+	if (es.pprr_SpotCenter->first < -1.) {
+		es.pprr_SpotCenter->first = (float)(-1. + dPixelSize / 2);
 		float rVelocity = rMakeSpotVelocity();
 		auto rMovementDirection = rng(M_PI);
 		prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
 		prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
-	if (prr_SpotCenter.first >= 1.) {
-		prr_SpotCenter.first = (float)(1. - dPixelSize / 2);
+	if (es.pprr_SpotCenter->first >= 1.) {
+		es.pprr_SpotCenter->first = (float)(1. - dPixelSize / 2);
 		float rVelocity = rMakeSpotVelocity();
 		auto rMovementDirection = M_PI + rng(M_PI);
 		prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
 		prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
-	prr_SpotCenter.second += prr_SpotSpeed.second;
-	if (prr_SpotCenter.second < -1.) {
-		prr_SpotCenter.second = (float)(-1. + dPixelSize / 2);
+	es.pprr_SpotCenter->second += prr_SpotSpeed.second;
+	if (es.pprr_SpotCenter->second < -1.) {
+		es.pprr_SpotCenter->second = (float)(-1. + dPixelSize / 2);
 		float rVelocity = rMakeSpotVelocity();
 		auto rMovementDirection = rng(M_PI) - M_PI / 2;
 		prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
 		prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
-	if (prr_SpotCenter.second >= 1.) {
-		prr_SpotCenter.second = (float)(1. - dPixelSize / 2);
+	if (es.pprr_SpotCenter->second >= 1.) {
+		es.pprr_SpotCenter->second = (float)(1. - dPixelSize / 2);
 		float rVelocity = rMakeSpotVelocity();
 		auto rMovementDirection = M_PI / 2 + rng(M_PI);
 		prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
 		prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
 	}
-	prr_CameraCenter.first += prr_CameraSpeed.first;
-	if (prr_CameraCenter.first < -0.5) {
-		prr_CameraCenter.first = -0.5F;
+	es.pprr_CameraCenter->first += prr_CameraSpeed.first;
+	if (es.pprr_CameraCenter->first < -0.5) {
+		es.pprr_CameraCenter->first = -0.5F;
 		prr_CameraSpeed.first = 0.F;
 	}
-	if (prr_CameraCenter.first > 0.5) {
-		prr_CameraCenter.first = 0.5F;
+	if (es.pprr_CameraCenter->first > 0.5) {
+		es.pprr_CameraCenter->first = 0.5F;
 		prr_CameraSpeed.first = 0.F;
 	}
-	prr_CameraCenter.second += prr_CameraSpeed.second;
-	if (prr_CameraCenter.second < -0.5) {
-		prr_CameraCenter.second = -0.5F;
+	es.pprr_CameraCenter->second += prr_CameraSpeed.second;
+	if (es.pprr_CameraCenter->second < -0.5) {
+		es.pprr_CameraCenter->second = -0.5F;
 		prr_CameraSpeed.second = 0.F;
 	}
-	if (prr_CameraCenter.second > 0.5) {
-		prr_CameraCenter.second = 0.5F;
+	if (es.pprr_CameraCenter->second > 0.5) {
+		es.pprr_CameraCenter->second = 0.5F;
 		prr_CameraSpeed.second = 0.F;
 	}
 	if (prr_CameraSpeed.first || prr_CameraSpeed.second) {
@@ -191,8 +226,114 @@ LIGHTSPOTENVIRONMENT_EXPORT void GenerateSignals(vector<vector<unsigned char> > 
 			double d = dCameraSpeedNew / dCameraSpeed;
 			prr_CameraSpeed.first *= d;
 			prr_CameraSpeed.second *= d;
-		} else prr_CameraSpeed.first = prr_CameraSpeed.second = 0.F;
+		}
+		else prr_CameraSpeed.first = prr_CameraSpeed.second = 0.F;
 	}
 }
 
+class DYNAMIC_LIBRARY_EXPORTED_CLASS DVSCamera: public IReceptors, public DVSEmulator
+{
+public:
+	DVSCamera(): DVSEmulator(CAMERA_SIZE, CAMERA_SIZE)	{}
+	virtual bool bGenerateReceptorSignals(char *prec, size_t neuronstrsize) override
+	{
+		vector<vector<unsigned char> > vvuc_;
+		vector<float> vr_PhaseSpacePoint(4);
+		GenerateSignals(vvuc_, vr_PhaseSpacePoint);
+		vector<bool> vb_Spikes(GetSpikeSignalDim());
+		AddFrame(vvuc_, &vb_Spikes);
+		FORI(vb_Spikes.size())
+			*(prec + _i * neuronstrsize) = vb_Spikes[_i];
+		return true;
+	}
+	virtual void Randomize(void) override {rng.Randomize();};
+	virtual void SaveStatus(Serializer &ser) const override {};
+	void LoadStatus(Serializer &ser) {};
+	virtual ~DVSCamera() = default;
+};
 
+class DYNAMIC_LIBRARY_EXPORTED_CLASS Evaluator: public IReceptors
+{
+	double dCurrentDistance;
+	int    TargetReachedSpikeCnt;
+public:
+	Evaluator(bool bRew): TargetReachedSpikeCnt(bRew ? 0 : -1), dCurrentDistance(es.dDistance()) {}
+	virtual bool bGenerateReceptorSignals(char *prec, size_t neuronstrsize) override
+	{
+		double dNewDistance = es.dDistance();
+		double d = dNewDistance - dCurrentDistance;
+		*prec = 0;
+		if (d > dDistanceChangeThreshold) {
+			dCurrentDistance = dNewDistance;
+			if (!bReward())
+				*prec = 1;
+		} else if (d < -dDistanceChangeThreshold) {
+			dCurrentDistance = dNewDistance;
+			if (bReward())
+				*prec = 1;
+		}
+		if (bReward() && dNewDistance < dTargetRange)
+			if (++TargetReachedSpikeCnt == TargetReachedSpikePeriod) {
+				*prec = 1;
+				TargetReachedSpikeCnt = 0;
+			}
+		return true;
+	}
+	virtual void Randomize(void) override {};
+	virtual void SaveStatus(Serializer &ser) const override {};
+	void LoadStatus(Serializer &ser) {};
+	virtual ~Evaluator() = default;
+	bool bReward() const {return TargetReachedSpikeCnt != -1;}
+};
+
+LIGHTSPOTENVIRONMENT_EXPORT IReceptors *SetParametersIn(int &nReceptors, const pugi::xml_node &xn)
+{
+	static int CallNo = 0;
+	int x, y;
+	DVSCamera *pdvs;
+	vector<vector<unsigned char> > vvuc_;
+	vector<float> vr_PhaseSpacePoint(4);
+	switch (CallNo++) {
+		case 0: FOR_(x, 2 * SPOT_HALFSIZE_PIXEL)
+					FOR_(y, 2 * SPOT_HALFSIZE_PIXEL) {
+						double d2 = (x + 0.5 - SPOT_HALFSIZE_PIXEL) * (x + 0.5 - SPOT_HALFSIZE_PIXEL) + (y + 0.5 - SPOT_HALFSIZE_PIXEL) * (y + 0.5 - SPOT_HALFSIZE_PIXEL);
+						SpotRaster[x][y] = (float)exp(-d2 * dPixelSize * dPixelSize / (2 * dSpotSize * dSpotSize));
+					}
+				nReceptors = CAMERA_SIZE * CAMERA_SIZE * 3;
+				pdvs = new DVSCamera;
+				FORI(10000) {
+					GenerateSignals(vvuc_, vr_PhaseSpacePoint);
+					pdvs->AddFrame(vvuc_);
+				}
+				cout << "calilbration signal generated\n";
+				pdvs->Calibrate(0.003F);
+				cout << "calilbration done\n";
+				return pdvs;
+		case 1: return new Evaluator(false);
+		case 2: return new Evaluator(true);
+		default: cout << "Too many calls of SetParametersIn\n";
+			    exit(-1);
+	}
+}
+
+LIGHTSPOTENVIRONMENT_EXPORT void SetParametersOut(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn) {}
+
+LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing, int nEquilibriumPeriods)
+{
+	for (auto i: v_Firing) {
+		int Direction = i % 4;
+		switch (Direction) {
+			case 0: prr_CameraSpeed.second += rSpikeEffect;
+				    break;
+			case 1: prr_CameraSpeed.first += rSpikeEffect;
+				    break;
+			case 2: prr_CameraSpeed.second -= rSpikeEffect;
+				    break;
+			case 3: prr_CameraSpeed.first -= rSpikeEffect;
+				    break;
+		}
+	}
+	return true;
+}
+
+LIGHTSPOTENVIRONMENT_EXPORT int Finalize(int OriginalTerminationCode) {return 0;}

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 #ifdef FOR_LINUX
@@ -16,6 +18,7 @@ typedef unsigned __int64 UNS64;
 #define FORI(N) for(UNS64 _i = 0; _i < (UNS64)(N); _i++)
 
 #ifndef FUNS64
+
 inline int atoi_s(const char *pch)
 {
     if (!*pch)
@@ -25,7 +28,6 @@ inline int atoi_s(const char *pch)
         throw std::runtime_error("int format conversion error");
     return ret;
 }
-#endif
 
 inline std::string str(int i) {
 	char buf[30];
@@ -36,3 +38,6 @@ inline std::string str(int i) {
 #endif
 	return(std::string(buf));
 }
+
+#endif
+
