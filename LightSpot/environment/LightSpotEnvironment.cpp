@@ -15,6 +15,7 @@ Emulates signal from videocamera looking at a moving light spot.
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <memory>
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 
@@ -70,15 +71,30 @@ float SpotRaster[2 * SPOT_HALFSIZE_PIXEL][2 * SPOT_HALFSIZE_PIXEL];
 
 #define ENVIRONMENT_STATE_SHARED_MEMORY_NAME "LightSpotEnvironment.sm"
 
-struct EnvironmentState
+class EnvironmentState
 {
-	pair<float, float> *pprr_CameraCenter = NULL;
+	unique_ptr<shared_memory_object> shm;
+	unique_ptr<mapped_region>        region;
+public:
+	pair<float, float> *pprr_CameraCenter;
 	pair<float, float> *pprr_SpotCenter = NULL;
-	EnvironmentState() {shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);}
+	EnvironmentState() 
+	{
+		shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);
+		//Create a shared memory object.
+		shm.reset(new shared_memory_object(create_only, ENVIRONMENT_STATE_SHARED_MEMORY_NAME, read_write));
+
+		//Set size
+		shm->truncate(sizeof(pair<pair<float, float>, pair<float, float> >));
+
+		//Map the whole shared memory in this process
+		region.reset(new mapped_region(*shm, read_write));
+		es.pprr_CameraCenter = (pair<float, float> *)region->get_address();
+	}
 	~EnvironmentState()	{shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);}
 	double dDistance() const 
 	{
-		return sqrt((pprr_CameraCenter->first - pprr_SpotCenter->first) * (pprr_CameraCenter->second - pprr_SpotCenter->second) +	(pprr_CameraCenter->second - pprr_SpotCenter->second) * (pprr_CameraCenter->second - pprr_SpotCenter->second));
+		return sqrt((pprr_CameraCenter->first - pprr_SpotCenter->first) * (pprr_CameraCenter->first - pprr_SpotCenter->first) + (pprr_CameraCenter->second - pprr_SpotCenter->second) * (pprr_CameraCenter->second - pprr_SpotCenter->second));
 	}
 } es;
 
@@ -102,31 +118,16 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_Ph
 {
 	static vector<vector<unsigned char> > vvuc_Last(CAMERA_SIZE, vector<unsigned char>(CAMERA_SIZE));
 	int x, y;
-	if (!es.pprr_CameraCenter) {
-		try {
-			//Create a shared memory object.
-			shared_memory_object shm(create_only, ENVIRONMENT_STATE_SHARED_MEMORY_NAME, read_write);
-
-			//Set size
-			shm.truncate(sizeof(pair<pair<float, float>, pair<float, float> >));
-
-			//Map the whole shared memory in this process
-			mapped_region region(shm, read_write);
-			es.pprr_CameraCenter = (pair<float, float> *)region.get_address();
-			es.pprr_SpotCenter = &((pair<pair<float, float>, pair<float, float> > *)es.pprr_CameraCenter)->second;
-			es.pprr_CameraCenter->first = (float)(-0.5 + rng());
-			es.pprr_CameraCenter->second = (float)(-0.5 + rng());
-			es.pprr_SpotCenter->first = (float)(-1. + 2 * rng());
-			es.pprr_SpotCenter->second = (float)(-1 + 2 * rng());
-			float rSpotVelocity = rMakeSpotVelocity();
-			float rSpotMovementDirection = (float)rng(2 * M_PI);
-			prr_SpotSpeed.first = rSpotVelocity * sin(rSpotMovementDirection);
-			prr_SpotSpeed.second = rSpotVelocity * cos(rSpotMovementDirection);
-		}
-		catch (...) {
-			cout << "Only one light spot environment per system is allowed!\n";
-			exit(-1);
-		}
+	if (!es.pprr_SpotCenter) {
+		es.pprr_SpotCenter = &((pair<pair<float, float>, pair<float, float> > *)es.pprr_CameraCenter)->second;
+		es.pprr_CameraCenter->first = (float)(-0.5 + rng());
+		es.pprr_CameraCenter->second = (float)(-0.5 + rng());
+		es.pprr_SpotCenter->first = (float)(-1. + 2 * rng());
+		es.pprr_SpotCenter->second = (float)(-1 + 2 * rng());
+		float rSpotVelocity = rMakeSpotVelocity();
+		float rSpotMovementDirection = (float)rng(2 * M_PI);
+		prr_SpotSpeed.first = rSpotVelocity * sin(rSpotMovementDirection);
+		prr_SpotSpeed.second = rSpotVelocity * cos(rSpotMovementDirection);
 	}
 
 	// мы сохраняем координаты и скорость светового пятна в координатах камеры
