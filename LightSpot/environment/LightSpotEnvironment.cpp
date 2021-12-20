@@ -74,6 +74,7 @@ struct EnvironmentState
 {
 	pair<float, float> *pprr_CameraCenter = NULL;
 	pair<float, float> *pprr_SpotCenter = NULL;
+	EnvironmentState() {shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);}
 	~EnvironmentState()	{shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);}
 	double dDistance() const 
 	{
@@ -316,6 +317,7 @@ LIGHTSPOTENVIRONMENT_EXPORT IReceptors *SetParametersIn(int &nReceptors, const p
 	}
 }
 
+LIGHTSPOTENVIRONMENT_EXPORT IReceptors *LoadStatus(Serializer &ser) {return nullptr;}   // TO DO
 LIGHTSPOTENVIRONMENT_EXPORT void SetParametersOut(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn) {}
 
 LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing, int nEquilibriumPeriods)
