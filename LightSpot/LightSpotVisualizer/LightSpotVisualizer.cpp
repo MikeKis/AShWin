@@ -48,7 +48,8 @@ public:
 
 };
 
-inline float rPixel(float rPhysical) {return (rPhysical + 1.F) * EXACT_RASTER_SIZE;}
+inline float rPixelX(float rPhysical) {return (rPhysical + 1.F) * EXACT_RASTER_SIZE;}
+inline float rPixelY(float rPhysical) { return (1.F - rPhysical) * EXACT_RASTER_SIZE; }
 
 int main()
 {
@@ -61,6 +62,12 @@ int main()
 	circle.setRadius(SPOT_HALFSIZE_PIXEL);
 	circle.setFillColor(sf::Color::White);
 	circle.setOrigin(SPOT_HALFSIZE_PIXEL, SPOT_HALFSIZE_PIXEL);
+	sf::RectangleShape rectangle;
+	rectangle.setSize(sf::Vector2f(EXACT_RASTER_SIZE, EXACT_RASTER_SIZE));
+	rectangle.setOutlineColor(sf::Color::White);
+	rectangle.setOutlineThickness(1);
+	rectangle.setOrigin(EXACT_RASTER_SIZE / 2, EXACT_RASTER_SIZE / 2);
+	rectangle.setFillColor(sf::Color::Transparent);
 
 	// Start the game loop
 	while (window.isOpen())
@@ -76,8 +83,10 @@ int main()
 
 		// Clear screen
 		window.clear();
-		circle.setPosition(rPixel(es.pprr_SpotCenter->first), rPixel(es.pprr_SpotCenter->second));
+		circle.setPosition(rPixelX(es.pprr_SpotCenter->first), rPixelY(es.pprr_SpotCenter->second));
 		window.draw(circle);
+		rectangle.setPosition(rPixelX(es.pprr_CameraCenter->first), rPixelY(es.pprr_CameraCenter->second));
+		window.draw(rectangle);
 
 		// Update the window
 		window.display();
