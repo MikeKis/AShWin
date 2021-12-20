@@ -23,6 +23,7 @@ Emulates signal from videocamera looking at a moving light spot.
 
 #include "../../AShWinCommon.h"
 #include "../../DVSEmulator/dvsemulator.h"
+#include "LightSpotEnvironment.h"
 
 #ifdef FOR_LINUX
 #define LIGHTSPOTENVIRONMENT_EXPORT
@@ -34,11 +35,9 @@ using namespace std;
 using namespace boost::interprocess;
 
 #define CAMERA_SIZE 20
-#define SPOT_HALFSIZE_PIXEL 30
-const unsigned ExactRasterSize = 100;
-const double dPixelSize = 1. / ExactRasterSize;
+const double dPixelSize = 1. / EXACT_RASTER_SIZE;
 const double dSpotSize = 0.01;
-const unsigned CameraPixelSize_pixels = ExactRasterSize / CAMERA_SIZE;
+const unsigned CameraPixelSize_pixels = EXACT_RASTER_SIZE / CAMERA_SIZE;
 const double dSpotHalfsize = SPOT_HALFSIZE_PIXEL * dPixelSize;
 const double dlogIntensitySensitivityThreshold = pow(dSpotHalfsize / dSpotSize, 2) * -0.5;
 
@@ -68,8 +67,6 @@ public:
 };
 
 float SpotRaster[2 * SPOT_HALFSIZE_PIXEL][2 * SPOT_HALFSIZE_PIXEL];
-
-#define ENVIRONMENT_STATE_SHARED_MEMORY_NAME "LightSpotEnvironment.sm"
 
 class EnvironmentState
 {

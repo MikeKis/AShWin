@@ -27,4 +27,9 @@
       <Filter>Исходные файлы</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LightSpotEnvironment.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
