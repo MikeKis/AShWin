@@ -49,7 +49,7 @@ public:
 };
 
 inline float rPixelX(float rPhysical) {return (rPhysical + 1.F) * EXACT_RASTER_SIZE;}
-inline float rPixelY(float rPhysical) { return (1.F - rPhysical) * EXACT_RASTER_SIZE; }
+inline float rPixelY(float rPhysical) {return (1.F - rPhysical) * EXACT_RASTER_SIZE;}
 
 int main()
 {

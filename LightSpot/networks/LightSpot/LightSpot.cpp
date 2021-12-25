@@ -20,7 +20,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	props.child("N").first_child().set_value(str((int)nWTANeurons).c_str());
 	auto ULMEMPopulation = inc.CreatePopulation(section);
 	auto ULMEMLink = Sections.child("Link");
-	auto pilpULMEMLink = inc.pilpCreateProjection(ULMEMLink, false);
+	auto pilpULMEMLink = inc.pilpCreateProjection(ULMEMLink, IntersectionLinkProperties::connection_excitatory);
 	FORI(nWTANeurons)
 		inc.bConnectNeurons((unsigned)_i, (unsigned)(_i + nWTANeurons), pilpULMEMLink);
 	pilpULMEMLink->SetConstantInitialWeight(1.);
