@@ -321,7 +321,7 @@ LIGHTSPOTENVIRONMENT_EXPORT void SetParametersOut(int ExperimentId, size_t tactT
 LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing, int nEquilibriumPeriods)
 {
 	for (auto i: v_Firing) {
-		int Direction = i % 4;
+		int Direction = i / 3;
 		switch (Direction) {
 			case 0: prr_CameraSpeed.second += rSpikeEffect;
 				    break;
