@@ -14,24 +14,17 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	string strSavedNetwork = xncopy.child_value("Saved");
 	inc.LoadNetwork(strSavedNetwork);
 	auto vstr_WTASections = inc.vstr_GetSectionNames();
-	auto nWTANeurons = inc.GetNNeurons();
 	auto Sections = xncopy.child("Sections");
-	auto WTALPLUSLink = Sections.child("LinkWTALPLUS");
-	auto pilpWTALPLUSLink = inc.pilpCreateProjection(WTALPLUSLink, IntersectionLinkProperties::connection_excitatory);
-	auto WTALMINUSLink = Sections.child("LinkWTALMINUS");
-	auto pilpWTALMINUSLink = inc.pilpCreateProjection(WTALMINUSLink, IntersectionLinkProperties::connection_excitatory);
-	auto GATELink = Sections.child("LinkGATE");
+	auto WTALLink = xncopy.child("LinkWTAL");
+	auto pilpWTALLink = inc.pilpCreateProjection(WTALLink, IntersectionLinkProperties::connection_excitatory);
+	auto GATELink = xncopy.child("LinkGATE");
 	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
 //	pilpULLPLUSLink->SetConstantInitialWeight(1.);
-	std::string LPLUSPopulation = "LPLUS";
-	std::string LMINUSPopulation = "LMINUS";
+	std::string LPopulation = "L";
 	inc.bAddNetwork(Sections);
-	for (auto i: vstr_WTASections) {
-		inc.bConnectPopulations(i, LPLUSPopulation, pilpWTALPLUSLink);   // LPLUSPopulation should be finalized!
-		inc.bConnectPopulations(i, LMINUSPopulation, pilpWTALMINUSLink);   // LPLUSPopulation should be finalized!
-	}
-	inc.DestroyProjection(pilpWTALPLUSLink);
-	inc.DestroyProjection(pilpWTALMINUSLink);
+	for (auto i: vstr_WTASections) 
+		inc.bConnectPopulations(i, LPopulation, pilpWTALLink);   // LPopulation should be finalized!
+	inc.DestroyProjection(pilpWTALLink);
 	vector<size_t> vind_EFFNeurons;
 	inc.GetNeuronIds("EFF", vind_EFFNeurons);
 	for (int j = 0; j < 12; j += 3) {
@@ -58,7 +51,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	inc.bConnectPopulations("Reward", ACTGATEREWPopulation, pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Punishment", ACTGATEPUNPopulation, pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.DestroyProjection(pilpGATELink);
-	inc.FinalizePoplulation(LPLUSPopulation);   // It is necessary because this population was connected additionally with another population
+	inc.FinalizePoplulation(LPopulation);   // It is necessary because this population was connected additionally with another population
 	inc.FinalizePoplulation(ACTGATEREWPopulation);   // It is necessary because this population was connected additionally with another population
 	inc.FinalizePoplulation(ACTGATEPUNPopulation);   // It is necessary because this population was connected additionally with another population
 	inc.Finalize();
