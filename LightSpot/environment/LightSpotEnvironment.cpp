@@ -41,15 +41,17 @@ const unsigned CameraPixelSize_pixels = EXACT_RASTER_SIZE / CAMERA_SIZE;
 const double dSpotHalfsize = SPOT_HALFSIZE_PIXEL * dPixelSize;
 const double dlogIntensitySensitivityThreshold = pow(dSpotHalfsize / dSpotSize, 2) * -0.5;
 
-const unsigned minSpotPassageTime_ms = 100;
-const unsigned maxSpotPassageTime_ms = 300;
+const float rTargetDVSIntensity = 0.003F;
+
+const unsigned minSpotPassageTime_ms = 300;
+const unsigned maxSpotPassageTime_ms = 1000;
 
 const double dFriction = 0.03;
-const float rSpikeEffect = 0.1F;
+const float rSpikeEffect = 0.03F;
 const double dTargetRange = 0.15;
 const int TargetReachedSpikePeriod = 6;
 
-const double dDistanceChangeThreshold = 0.03;
+const double dDistanceChangeThreshold = 0.1;
 
 class RandomNumberGenerator
 {
@@ -232,8 +234,7 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_Ph
 
 class DYNAMIC_LIBRARY_EXPORTED_CLASS DVSCamera: public IReceptors, public DVSEmulator
 {
-public:
-	DVSCamera(): DVSEmulator(CAMERA_SIZE, CAMERA_SIZE)	{}
+protected:
 	virtual bool bGenerateReceptorSignals(char *prec, size_t neuronstrsize) override
 	{
 		vector<vector<unsigned char> > vvuc_;
@@ -241,22 +242,29 @@ public:
 		GenerateSignals(vvuc_, vr_PhaseSpacePoint);
 		vector<bool> vb_Spikes(GetSpikeSignalDim());
 		AddFrame(vvuc_, &vb_Spikes);
-		FORI(vb_Spikes.size())
-			*(prec + _i * neuronstrsize) = vb_Spikes[_i];
+		for (auto i: vb_Spikes) {
+			*prec = i;
+			prec += neuronstrsize;
+		}
 		return true;
 	}
-	virtual void Randomize(void) override {rng.Randomize();};
-	virtual void SaveStatus(Serializer &ser) const override {};
-	void LoadStatus(Serializer &ser) {};
+public:
+	DVSCamera(): IReceptors(CAMERA_SIZE * CAMERA_SIZE * 3, 3), DVSEmulator(CAMERA_SIZE, CAMERA_SIZE) {}
+	virtual void Randomize(void) override {rng.Randomize();}
+	virtual void SaveStatus(Serializer &ser) const override {}
+	void LoadStatus(Serializer &ser) {}
 	virtual ~DVSCamera() = default;
 };
 
+int ntact = 0;
+vector<int> vn_TactsInside;
+
 class DYNAMIC_LIBRARY_EXPORTED_CLASS Evaluator: public IReceptors
 {
-	double dCurrentDistance;
-	int    TargetReachedSpikeCnt;
+	double      dCurrentDistance;
+	int         TargetReachedSpikeCnt;
 public:
-	Evaluator(bool bRew): TargetReachedSpikeCnt(bRew ? 0 : -1), dCurrentDistance(es.dDistance()) {}
+	Evaluator(bool bRew): IReceptors(1, 3), TargetReachedSpikeCnt(bRew ? 0 : -1), dCurrentDistance(es.dDistance()) {}
 	virtual bool bGenerateReceptorSignals(char *prec, size_t neuronstrsize) override
 	{
 		double dNewDistance = es.dDistance();
@@ -271,11 +279,19 @@ public:
 			if (bReward())
 				*prec = 1;
 		}
-		if (bReward() && dNewDistance < dTargetRange)
-			if (++TargetReachedSpikeCnt == TargetReachedSpikePeriod) {
-				*prec = 1;
-				TargetReachedSpikeCnt = 0;
+		if (bReward()) {
+			if (!(ntact % 200000)) {
+				vn_TactsInside.push_back(0);
 			}
+			if (dNewDistance < dTargetRange) {
+				if (++TargetReachedSpikeCnt == TargetReachedSpikePeriod) {
+					*prec = 1;
+					TargetReachedSpikeCnt = 0;
+				}
+				++vn_TactsInside.back();
+			}
+			++ntact;
+		}
 		return true;
 	}
 	virtual void Randomize(void) override {};
@@ -305,7 +321,7 @@ LIGHTSPOTENVIRONMENT_EXPORT IReceptors *SetParametersIn(int &nReceptors, const p
 					pdvs->AddFrame(vvuc_);
 				}
 				cout << "calilbration signal generated\n";
-				pdvs->Calibrate(0.003F);
+				pdvs->Calibrate(rTargetDVSIntensity);
 				cout << "calilbration done\n";
 				return pdvs;
 		case 1: return new Evaluator(false);
@@ -336,4 +352,10 @@ LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing,
 	return true;
 }
 
-LIGHTSPOTENVIRONMENT_EXPORT int Finalize(int OriginalTerminationCode) {return 0;}
+LIGHTSPOTENVIRONMENT_EXPORT int Finalize(int OriginalTerminationCode) 
+{
+	cout << "Tacts inside:\n";
+	for (auto z: vn_TactsInside)
+		cout << z << endl;
+	return vn_TactsInside.back() / 20;
+}

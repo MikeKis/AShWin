@@ -14,6 +14,8 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	string strSavedNetwork = xncopy.child_value("Saved");
 	inc.LoadNetwork(strSavedNetwork);
 	auto vstr_WTASections = inc.vstr_GetSectionNames();
+	for (auto i: vstr_WTASections)
+		inc.FixSection(i);
 	auto Sections = xncopy.child("Sections");
 	auto WTALLink = xncopy.child("LinkWTAL");
 	auto pilpWTALLink = inc.pilpCreateProjection(WTALLink, IntersectionLinkProperties::connection_excitatory);
