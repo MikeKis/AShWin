@@ -88,7 +88,7 @@ public:
 
 		//Map the whole shared memory in this process
 		region.reset(new mapped_region(*shm, read_write));
-		es.pprr_CameraCenter = (pair<float, float> *)region->get_address();
+        pprr_CameraCenter = (pair<float, float> *)region->get_address();
 	}
 	~EnvironmentState()	{shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);}
 	double dDistance() const 
@@ -113,9 +113,10 @@ float rMakeSpotVelocity(void)
 	return(1.F / i1);
 }
 
+vector<vector<unsigned char> > vvuc_Last(CAMERA_SIZE, vector<unsigned char>(CAMERA_SIZE));
+
 void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_PhaseSpacePoint)
 {
-	static vector<vector<unsigned char> > vvuc_Last(CAMERA_SIZE, vector<unsigned char>(CAMERA_SIZE));
 	int x, y;
 	if (!es.pprr_SpotCenter) {
 		es.pprr_SpotCenter = &((pair<pair<float, float>, pair<float, float> > *)es.pprr_CameraCenter)->second;
@@ -147,29 +148,28 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_Ph
 		p_SpotUpperLeftCornerRelativetoCamera_pixels = p_NewSpotUpperLeftCornerRelativetoCamera_pixels;
 		FOR_(y, CAMERA_SIZE)
 			FOR_(x, CAMERA_SIZE) {
-			double d = 0.;
-			int x1, y1;
-			pair<int, int> p_CameraPixelUpperLeftCorner(x * CameraPixelSize_pixels, y * CameraPixelSize_pixels);
-			FOR_(y1, CameraPixelSize_pixels) {
-				int iy = p_CameraPixelUpperLeftCorner.second + y1;
-				int yinSpot = iy - p_NewSpotUpperLeftCornerRelativetoCamera_pixels.second;
-				if (yinSpot >= 0 && yinSpot < 2 * SPOT_HALFSIZE_PIXEL)
-					FOR_(x1, CameraPixelSize_pixels) {
-					int ix = p_CameraPixelUpperLeftCorner.first + x1;
-					int xinSpot = ix - p_NewSpotUpperLeftCornerRelativetoCamera_pixels.first;
-					if (xinSpot >= 0 && xinSpot < 2 * SPOT_HALFSIZE_PIXEL && yinSpot >= 0 && yinSpot < 2 * SPOT_HALFSIZE_PIXEL) {
-						auto d1 = SpotRaster[yinSpot][xinSpot];
-						d += d1;
-					}
-				}
-			}
-			if (d) {
-				d /= CameraPixelSize_pixels * CameraPixelSize_pixels;
-				auto d2 = log(d);
-				vvuc_Last[y][x] = d2 < dlogIntensitySensitivityThreshold ? 0 : (unsigned char)((dlogIntensitySensitivityThreshold - d2) / dlogIntensitySensitivityThreshold * 255);
-			}
-			else vvuc_Last[y][x] = 0;
-		}
+                double d = 0.;
+                int x1, y1;
+                pair<int, int> p_CameraPixelUpperLeftCorner(x * CameraPixelSize_pixels, y * CameraPixelSize_pixels);
+                FOR_(y1, CameraPixelSize_pixels) {
+                    int iy = p_CameraPixelUpperLeftCorner.second + y1;
+                    int yinSpot = iy - p_NewSpotUpperLeftCornerRelativetoCamera_pixels.second;
+                    if (yinSpot >= 0 && yinSpot < 2 * SPOT_HALFSIZE_PIXEL)
+                        FOR_(x1, CameraPixelSize_pixels) {
+                        int ix = p_CameraPixelUpperLeftCorner.first + x1;
+                        int xinSpot = ix - p_NewSpotUpperLeftCornerRelativetoCamera_pixels.first;
+                        if (xinSpot >= 0 && xinSpot < 2 * SPOT_HALFSIZE_PIXEL && yinSpot >= 0 && yinSpot < 2 * SPOT_HALFSIZE_PIXEL) {
+                            auto d1 = SpotRaster[yinSpot][xinSpot];
+                            d += d1;
+                        }
+                    }
+                }
+                if (d) {
+                    d /= CameraPixelSize_pixels * CameraPixelSize_pixels;
+                    auto d2 = log(d);
+                    vvuc_Last[y][x] = d2 < dlogIntensitySensitivityThreshold ? 0 : (unsigned char)((dlogIntensitySensitivityThreshold - d2) / dlogIntensitySensitivityThreshold * 255);
+                } else vvuc_Last[y][x] = 0;
+            }
 	}
 	vvuc_ = vvuc_Last;
 	es.pprr_SpotCenter->first += prr_SpotSpeed.first;
@@ -251,9 +251,32 @@ protected:
 public:
 	DVSCamera(): IReceptors(CAMERA_SIZE * CAMERA_SIZE * 3, 3), DVSEmulator(CAMERA_SIZE, CAMERA_SIZE) {}
 	virtual void Randomize(void) override {rng.Randomize();}
-	virtual void SaveStatus(Serializer &ser) const override {}
-	void LoadStatus(Serializer &ser) {}
+    virtual void SaveStatus(Serializer &ser) const override
+    {
+        IReceptors::SaveStatus(ser);
+        ser << *((const DVSEmulator *)this);
+        ser << *es.pprr_CameraCenter;
+        ser << *es.pprr_SpotCenter;
+        ser << prr_SpotSpeed;
+        ser << prr_CameraSpeed;
+        ser << p_SpotUpperLeftCornerRelativetoCamera_pixels;
+        ser << rng;
+        ser << vvuc_Last;
+    }
 	virtual ~DVSCamera() = default;
+    void LoadStatus(Serializer &ser)
+    {
+        IReceptors::LoadStatus(ser);
+        ser >> *((DVSEmulator *)this);
+        ser >> *es.pprr_CameraCenter;
+        es.pprr_SpotCenter = &((pair<pair<float, float>, pair<float, float> > *)es.pprr_CameraCenter)->second;
+        ser >> *es.pprr_SpotCenter;
+        ser >> prr_SpotSpeed;
+        ser >> prr_CameraSpeed;
+        ser >> p_SpotUpperLeftCornerRelativetoCamera_pixels;
+        ser >> rng;
+        ser >> vvuc_Last;
+    }
 };
 
 int ntact = 0;
@@ -295,10 +318,24 @@ public:
 		return true;
 	}
 	virtual void Randomize(void) override {};
-	virtual void SaveStatus(Serializer &ser) const override {};
-	void LoadStatus(Serializer &ser) {};
-	virtual ~Evaluator() = default;
-	bool bReward() const {return TargetReachedSpikeCnt != -1;}
+    virtual void SaveStatus(Serializer &ser) const override
+    {
+        IReceptors::SaveStatus(ser);
+        ser << dCurrentDistance;
+        ser << TargetReachedSpikeCnt;
+        ser << ntact;
+        ser << vn_TactsInside;
+    }
+    virtual ~Evaluator() = default;
+    void LoadStatus(Serializer &ser)
+    {
+        IReceptors::LoadStatus(ser);
+        ser >> dCurrentDistance;
+        ser >> TargetReachedSpikeCnt;
+        ser >> ntact;
+        ser >> vn_TactsInside;
+    }
+    bool bReward() const {return TargetReachedSpikeCnt != -1;}
 };
 
 LIGHTSPOTENVIRONMENT_EXPORT IReceptors *SetParametersIn(int &nReceptors, const pugi::xml_node &xn)
@@ -331,7 +368,34 @@ LIGHTSPOTENVIRONMENT_EXPORT IReceptors *SetParametersIn(int &nReceptors, const p
 	}
 }
 
-LIGHTSPOTENVIRONMENT_EXPORT IReceptors *LoadStatus(Serializer &ser) {return nullptr;}   // TO DO
+LIGHTSPOTENVIRONMENT_EXPORT IReceptors *LoadStatus(Serializer &ser)
+{
+    static int CallNo = 0;
+    int x, y;
+    DVSCamera *pdvs;
+    Evaluator *peva;
+    vector<vector<unsigned char> > vvuc_;
+    vector<float> vr_PhaseSpacePoint(4);
+    switch (CallNo++) {
+        case 0: FOR_(x, 2 * SPOT_HALFSIZE_PIXEL)
+                    FOR_(y, 2 * SPOT_HALFSIZE_PIXEL) {
+                        double d2 = (x + 0.5 - SPOT_HALFSIZE_PIXEL) * (x + 0.5 - SPOT_HALFSIZE_PIXEL) + (y + 0.5 - SPOT_HALFSIZE_PIXEL) * (y + 0.5 - SPOT_HALFSIZE_PIXEL);
+                        SpotRaster[x][y] = (float)exp(-d2 * dPixelSize * dPixelSize / (2 * dSpotSize * dSpotSize));
+                    }
+                pdvs = new DVSCamera;
+                pdvs->LoadStatus(ser);
+                return pdvs;
+        case 1: peva = new Evaluator(false);
+                peva->LoadStatus(ser);
+                return peva;
+        case 2: peva = new Evaluator(true);
+                peva->LoadStatus(ser);
+                return peva;
+        default: cout << "Too many calls of SetParametersIn\n";
+                exit(-1);
+    }
+}
+
 LIGHTSPOTENVIRONMENT_EXPORT void SetParametersOut(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn) {}
 
 LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing, int nEquilibriumPeriods)
@@ -359,3 +423,5 @@ LIGHTSPOTENVIRONMENT_EXPORT int Finalize(int OriginalTerminationCode)
 		cout << z << endl;
 	return vn_TactsInside.back() / 20;
 }
+
+LIGHTSPOTENVIRONMENT_EXPORT void Serialize(Serializer &ser, bool bSave){}

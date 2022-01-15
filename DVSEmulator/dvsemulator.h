@@ -21,6 +21,28 @@ public:
     void Calibrate(float rTargetSpikeFrequency);
     void ResetCalibration(){qvvuc_forCalibration.clear();}
     size_t GetSpikeSignalDim() const {return vvd_StateBrightness.size() * vvd_StateBrightness.front().size() * 3;}
+
+    friend inline Serializer &operator<<(Serializer &ser, const DVSEmulator &dvs)
+    {
+        ser << dvs.vvd_StateBrightness;
+        ser << dvs.vvuc_CurrentState;
+        ser << dvs.dBrightnessThreshold;
+        ser << dvs.ucChangeThreshold;
+        ser << dvs.maxCalibrationQueueSize;
+        ser << dvs.qvvuc_forCalibration;
+        return ser;
+    }
+    friend inline Serializer &operator>>(Serializer &ser, DVSEmulator &dvs)
+    {
+        ser >> dvs.vvd_StateBrightness;
+        ser >> dvs.vvuc_CurrentState;
+        ser >> dvs.dBrightnessThreshold;
+        ser >> dvs.ucChangeThreshold;
+        ser >> dvs.maxCalibrationQueueSize;
+        ser >> dvs.qvvuc_forCalibration;
+        return ser;
+    }
+
 };
 
 #endif // DVSEMULATOR_H
