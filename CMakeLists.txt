@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(.)
 include_directories(DVSEmulator)
+include_directories(../E/ArNI)
 include_directories(../E/ArNI/sg)
 link_directories(/usr/local/lib) #it is - to find boost!
 

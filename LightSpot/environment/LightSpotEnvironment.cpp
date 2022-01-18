@@ -26,7 +26,7 @@ Emulates signal from videocamera looking at a moving light spot.
 #include "LightSpotEnvironment.h"
 
 #ifdef FOR_LINUX
-#define LIGHTSPOTENVIRONMENT_EXPORT
+#define LIGHTSPOTENVIRONMENT_EXPORT extern "C"
 #else
 #define LIGHTSPOTENVIRONMENT_EXPORT __declspec(dllexport)
 #endif

@@ -3,4 +3,5 @@ project(LightSpot)
 
 add_subdirectory(networks)
 add_subdirectory(environment)
+add_subdirectory(LightSpotVisualizer)
 

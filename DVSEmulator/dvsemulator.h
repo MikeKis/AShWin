@@ -5,9 +5,9 @@
 #include <utility>
 #include <deque>
 
-#include "DVSEmulator_global.h"
+#include "../AShWinCommon.h"
 
-class DVSEMULATOR_EXPORT DVSEmulator
+class DVSEmulator
 {
     std::vector<std::vector<double> >                     vvd_StateBrightness;
     std::vector<std::vector<unsigned char> >              vvuc_CurrentState;
