@@ -103,6 +103,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>e:\boost\lib64-msvc-14.1</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>LightSpotEnvironment.def</ModuleDefinitionFile>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

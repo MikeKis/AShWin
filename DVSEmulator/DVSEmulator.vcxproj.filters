@@ -18,15 +18,9 @@
     <ClCompile Include="DVSEmulator.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dvsemulator.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="DVSEmulator_global.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
