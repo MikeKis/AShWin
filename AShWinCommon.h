@@ -310,5 +310,28 @@ template<class Serializable1, class Serializable2> Serializer &operator>>(Serial
     delete[] pp_;
     return(ser);
 }
+
+template<class T> void avgdis(const T *p, size_t n, double &davg, double &ddis)
+{
+	if (!n)
+		throw std::runtime_error("avgdis");
+	if (n == 1) {
+		davg = *p;
+		ddis = 0.;
+		return;
+	}
+	size_t l;
+	davg = 0;
+	for (l = 0; l < n; l++)
+		davg += p[l];
+	davg /= n;
+	ddis = 0;
+	for (l = 0; l < n; l++) {
+		double d = p[l] - davg;
+		ddis += d * d;
+	}
+	ddis /= n - 1;
+}
+
 #endif
 

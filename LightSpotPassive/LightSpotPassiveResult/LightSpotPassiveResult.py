@@ -18,9 +18,9 @@ from readpro import readpro
 
 video_file = 'StableWeights.mp4'
 
-id = 2002
+id = 3003
 nreceptors = 1200
-ncopies = 9
+ncopies = 3
 nneu = 89
 show_protocol = False
 
@@ -133,16 +133,21 @@ leg.get_frame().set_alpha(0.5)
 plt.title('Section relative activity')
 
 file = R"%d.stable.csv" % id
-nstable = []
-ndstable = []
+nstable = {}
+ndstable = {}
 tact = [0]
 
 with open(file, "r") as fil:
     csr = csv.reader(fil)
     for row in csr:
-        tact.append(int(row[0]))
-        nstable.append(int(row[1]))        
-        ndstable.append(int(row[2]))
+        curtact = int(row[0])
+        if curtact != tact[-1]:
+            tact.append(curtact)
+        sec = int(row[1])
+        nstable.setdefault(sec, [0] * (len(tact) - 2))
+        ndstable.setdefault(sec, [0] * (len(tact) - 2))
+        nstable[sec].append(int(row[2]))        
+        ndstable[sec].append(int(row[3]))        
 
 file = R"%d.stable_links.csv" % id
 receptor = [[] for i in range(len(tact))]
@@ -152,10 +157,11 @@ with open(file, "r") as fil:
     csr = csv.reader(fil)
     for row in csr:
         rec = int(row[1])
-        if rec >= 0 and rec < nreceptors:
+        neu = int(row[2])
+        if rec >= 0 and rec < nreceptors and neu < nneu * ncopies:
             indtact = tact.index(int(row[0]))
             receptor[indtact].append(rec)        
-            neuron[indtact].append(int(row[2]))
+            neuron[indtact].append(neu)
             section = int(int(row[2]) / nneu)
             channel = int(rec / (20 * 20)) 
             pixelno = rec - channel * 20 * 20
@@ -164,24 +170,28 @@ with open(file, "r") as fil:
 
 def DrawStableWeights():
     ax1 = plt.gca()
-
-    color = 'tab:red'
+    for d in nstable.keys():
+        ax1.plot(tact[1:], nstable[d], label = d, linewidth = 1)
     ax1.set_xlabel('tact')
-    ax1.set_ylabel('n stable links', color=color)
-    ax1.plot(tact[1:], nstable, linewidth = 0.3, color=color)
-    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.set_ylabel('n stable links')
+    leg = plt.legend(loc = 'best', ncol = 2, mode = "expand", shadow = True, fancybox = True)
+    leg.get_frame().set_alpha(0.5)
 
-    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-
-    color = 'tab:blue'
-    ax2.set_ylabel('stable link diff', color=color)  # we already handled the x-label with ax1
-    ax2.plot(tact[1:], ndstable, linewidth = 0.3, color=color)
-    ax2.tick_params(axis='y', labelcolor=color)
-
-    plt.title('Weight change dynamics')
+def DrawStableWeightsDif():
+    ax1 = plt.gca()
+    for d in nstable.keys():
+        ax1.plot(tact[1:], ndstable[d], label = d, linewidth = 1)
+    ax1.set_xlabel('tact')
+    ax1.set_ylabel('stable link diff')
+    leg = plt.legend(loc = 'best', ncol = 2, mode = "expand", shadow = True, fancybox = True)
+    leg.get_frame().set_alpha(0.5)
 
 plt.figure(2)
 DrawStableWeights()
+
+plt.figure(3)
+DrawStableWeightsDif()
+
 
 fig, ax = plt.subplots(ncopies, nneu, figsize=(42, 10))
 
