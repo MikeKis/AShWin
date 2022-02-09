@@ -18,10 +18,10 @@ from readpro import readpro
 
 video_file = 'StableWeights.mp4'
 
-id = 3003
+id = 3004
 nreceptors = 1200
-ncopies = 3
-nneu = 89
+ncopies = 10
+nneu = 10
 show_protocol = False
 
 
@@ -153,20 +153,24 @@ file = R"%d.stable_links.csv" % id
 receptor = [[] for i in range(len(tact))]
 neuron = [[] for i in range(len(tact))]
 weights = nmp.zeros((len(tact), ncopies, nneu, 20, 20, 3))
+weightsind = [{} for i in tact]
 with open(file, "r") as fil:
     csr = csv.reader(fil)
     for row in csr:
         rec = int(row[1])
         neu = int(row[2])
-        if rec >= 0 and rec < nreceptors and neu < nneu * ncopies:
+        if rec >= 0 and rec < nreceptors:
             indtact = tact.index(int(row[0]))
-            receptor[indtact].append(rec)        
-            neuron[indtact].append(neu)
-            section = int(int(row[2]) / nneu)
             channel = int(rec / (20 * 20)) 
             pixelno = rec - channel * 20 * 20
             picrow = int(pixelno / 20)
-            weights[indtact][section][int(row[2]) - section * nneu][picrow][pixelno - picrow * 20][channel] = 1
+            if  neu < nneu * ncopies:
+                receptor[indtact].append(rec)        
+                neuron[indtact].append(neu)
+                section = int(int(row[2]) / nneu)
+                weights[indtact][section][int(row[2]) - section * nneu][picrow][pixelno - picrow * 20][channel] = 1
+            weightsind[indtact].setdefault(neu, nmp.zeros((20, 20, 3)))
+            weightsind[indtact][neu][picrow][pixelno - picrow * 20][channel] = 1
 
 def DrawStableWeights():
     ax1 = plt.gca()
@@ -192,6 +196,9 @@ DrawStableWeights()
 plt.figure(3)
 DrawStableWeightsDif()
 
+#plt.figure(4)
+#plt.imshow(weightsind[13][770])
+#plt.show()
 
 fig, ax = plt.subplots(ncopies, nneu, figsize=(42, 10))
 

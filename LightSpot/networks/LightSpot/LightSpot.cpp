@@ -63,12 +63,12 @@ void WTAMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Syna
 		if (av_[2].size()) {
 			avgdis(&av_[2].front(), av_[2].size(), davgx, ddisx);
 			avgdis(&av_[3].front(), av_[3].size(), davgy, ddisy);
-			ss << "I" << av_[0].size() << "(" << davgx << "," << davgy << ")/(" << sqrt(ddisx) << "," << sqrt(ddisy) << ")";
+			ss << "I" << av_[2].size() << "(" << davgx << "," << davgy << ")/(" << sqrt(ddisx) << "," << sqrt(ddisy) << ")";
 		}
 		if (av_[4].size()) {
 			avgdis(&av_[4].front(), av_[4].size(), davgx, ddisx);
 			avgdis(&av_[5].front(), av_[5].size(), davgy, ddisy);
-			ss << "D" << av_[0].size() << "(" << davgx << "," << davgy << ")/(" << sqrt(ddisx) << "," << sqrt(ddisy) << ")";
+			ss << "D" << av_[4].size() << "(" << davgx << "," << davgy << ")/(" << sqrt(ddisx) << "," << sqrt(ddisy) << ")";
 		}
 		vstr_Meanings[_i] = ss.str();
 	}
@@ -92,11 +92,8 @@ void ActionSpecificMeanings(string strPopulationType, vector<string> &vstr_Meani
 
 void LMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("L", vstr_Meanings);}
 void EFFMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("EFF", vstr_Meanings);}
-void ACTMEMMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("ACTMEM", vstr_Meanings);}
-void ACTGATEREWMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("ACTGATEREW", vstr_Meanings);}
-void ACTGATEPUNMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("ACTGATEPUN", vstr_Meanings);}
-void ANDACTGATEREWMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("ANDACTGATEREW", vstr_Meanings);}
-void ANDACTGATEPUNMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("ANDACTGATEPUN", vstr_Meanings);}
+void GATEREWMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("GATEREW", vstr_Meanings);}
+void GATEPUNMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("GATEPUN", vstr_Meanings);}
 
 DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const INetworkConfigurator &inc)
 { 
@@ -105,7 +102,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto INPLink = xncopy.child("LinkINP");
 	auto pilpINPLink = inc.pilpCreateProjection(INPLink, IntersectionLinkProperties::connection_excitatory);
 	auto GATELink = xncopy.child("LinkGATE");
-	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_inhibitory);
+	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
 	inc.bAddNetwork(Sections);
 	inc.bConnectPopulations("DVS", "W", pilpINPLink);
 	inc.bDuplicatePopulation("W", "W1", true);
@@ -132,21 +129,34 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 		inc.SetNeuronProperty(vind_EFFNeurons[j + 2], p_ThresholdExcessIncrement, INTERNAL_WEIGHT * 1.33);
 
 	}
-	inc.bConnectPopulations("Reward", "ACTGATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
-	inc.bConnectPopulations("Punishment", "ACTGATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
+	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
+	inc.bConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.DestroyProjection(pilpGATELink);
-	inc.SetMeaningDefinitions("DVS", DVSMeanings);
-	inc.SetMeaningDefinitions("Reward", RewardMeanings);
-	inc.SetMeaningDefinitions("Punishment", PunishmentMeanings);
-	inc.SetMeaningDefinitions("W", WTAMeanings);
-	inc.SetMeaningDefinitions("W1", WTAMeanings);
-	inc.SetMeaningDefinitions("W2", WTAMeanings);
-	inc.SetMeaningDefinitions("L", LMeanings);
-	inc.SetMeaningDefinitions("EFF", EFFMeanings); 
-	inc.SetMeaningDefinitions("ACTMEM", ACTMEMMeanings);
-	inc.SetMeaningDefinitions("ACTGATEREW", ACTGATEREWMeanings);
-	inc.SetMeaningDefinitions("ACTGATEPUN", ACTGATEPUNMeanings);
-	inc.SetMeaningDefinitions("ANDACTMEMREW", ANDACTGATEREWMeanings);
-	inc.SetMeaningDefinitions("ANDACTMEMPUN", ANDACTGATEPUNMeanings);
 	inc.Finalize();
+}
+
+DYNAMIC_LIBRARY_ENTRY_POINT void SetMeaningDefinitions(vector<pair<const char *, pfnsetmeanings> > &vppchfsm_)
+{
+	vppchfsm_.clear();
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("DVS", DVSMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("Reward", RewardMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("Punishment", PunishmentMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W", WTAMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W1", WTAMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W2", WTAMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("L", LMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("EFF", EFFMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEREW", GATEREWMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEPUN", GATEPUNMeanings));
+}
+
+DYNAMIC_LIBRARY_ENTRY_POINT void ProcessTact(unsigned CurrentTact, const INetworkConfigurator &inc)
+{
+	/*
+	if (CurrentTact == 1000000) {
+		inc.FixSection("L");
+		inc.FixSection("W");
+		inc.FixSection("W1");
+		inc.FixSection("W2"); 
+	} */
 }

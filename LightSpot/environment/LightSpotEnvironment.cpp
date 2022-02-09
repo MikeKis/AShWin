@@ -295,11 +295,11 @@ public:
 		*prec = 0;
 		if (d > dDistanceChangeThreshold) {
 			dCurrentDistance = dNewDistance;
-			if (!bReward())
+			if (!bReward() /* && ntact >= 1000000 */)
 				*prec = 1;
 		} else if (d < -dDistanceChangeThreshold) {
 			dCurrentDistance = dNewDistance;
-			if (bReward())
+			if (bReward() /* && ntact >= 1000000 */)
 				*prec = 1;
 		}
 		if (bReward()) {
