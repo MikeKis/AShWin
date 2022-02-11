@@ -19,7 +19,7 @@ Emulates signal from videocamera looking at a moving light spot.
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 
-#include <sg.h>
+#include <sg/sg.h>
 
 #include "../../AShWinCommon.h"
 #include "../../DVSEmulator/dvsemulator.h"
@@ -225,8 +225,8 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_Ph
 		double dCameraSpeedNew = dCameraSpeed - dFriction;
 		if (dCameraSpeedNew > 0.) {
 			double d = dCameraSpeedNew / dCameraSpeed;
-			prr_CameraSpeed.first *= d;
-			prr_CameraSpeed.second *= d;
+			prr_CameraSpeed.first *= (float)d;
+			prr_CameraSpeed.second *= (float)d;
 		}
 		else prr_CameraSpeed.first = prr_CameraSpeed.second = 0.F;
 	}

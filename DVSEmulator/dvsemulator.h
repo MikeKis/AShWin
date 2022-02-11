@@ -5,6 +5,7 @@
 #include <utility>
 #include <deque>
 
+#include <Serializer.h>
 #include "../AShWinCommon.h"
 
 class DVSEmulator

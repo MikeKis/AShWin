@@ -94,7 +94,7 @@
       <PreprocessorDefinitions>NDEBUG;LIGHTSPOTENVIRONMENT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
-      <AdditionalIncludeDirectories>e:\boost;e:\ArNI\sg</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>e:\boost;e:\ArNI</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
