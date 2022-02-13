@@ -58,7 +58,7 @@
               <Structure Type="W">
               </Structure>
               <CHARTIME>10</CHARTIME>
-              <THRESHOLDDECAYPERIOD>10</THRESHOLDDECAYPERIOD>
+              <THRESHOLDDECAYPERIOD>5</THRESHOLDDECAYPERIOD>
               <THRESHOLDINC>10</THRESHOLDINC>
               <WEIGHTINC>0</WEIGHTINC>
               <PLASTICITYTIME>50</PLASTICITYTIME>
