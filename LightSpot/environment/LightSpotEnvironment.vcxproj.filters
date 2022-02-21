@@ -15,12 +15,20 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DVSEmulator.cpp">
+    <ClCompile Include="LightSpotEnvironment.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="dvsemulator.h">
+    <None Include="LightSpotEnvironment.def">
+      <Filter>Исходные файлы</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LightSpotEnvironment.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

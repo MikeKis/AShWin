@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{E5DBE6C9-9752-4C9B-BD52-A04758EDFB47}</ProjectGuid>
+    <ProjectGuid>{3CD66BA6-6255-4E36-8C74-B233DD81C921}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>LightSpotPassiveRecord</RootNamespace>
+    <RootNamespace>LightSpotVisualizer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -94,13 +94,15 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile />
+      <AdditionalIncludeDirectories>e:\boost;..\..\SFML-2.5.1\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\SFML-2.5.1\lib;e:\boost\lib64-msvc-14.1</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-window.lib;sfml-system.lib;sfml-graphics.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -153,15 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\DVSEmulator\DVSEmulator.vcxproj">
-      <Project>{12473ce3-f7f3-4d22-bcd7-a9489e48a9f9}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LightSpotPassive.vcxproj">
-      <Project>{3edd14c6-c38f-473a-b0dd-2b1c6e951fcf}</Project>
-    </ProjectReference>
+    <ClCompile Include="LightSpotVisualizer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

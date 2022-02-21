@@ -5,9 +5,10 @@
 #include <utility>
 #include <deque>
 
-#include "DVSEmulator_global.h"
+#include <Serializer.h>
+#include "../AShWinCommon.h"
 
-class DVSEMULATOR_EXPORT DVSEmulator
+class DVSEmulator
 {
     std::vector<std::vector<double> >                     vvd_StateBrightness;
     std::vector<std::vector<unsigned char> >              vvuc_CurrentState;
@@ -21,6 +22,28 @@ public:
     void Calibrate(float rTargetSpikeFrequency);
     void ResetCalibration(){qvvuc_forCalibration.clear();}
     size_t GetSpikeSignalDim() const {return vvd_StateBrightness.size() * vvd_StateBrightness.front().size() * 3;}
+
+    friend inline Serializer &operator<<(Serializer &ser, const DVSEmulator &dvs)
+    {
+        ser << dvs.vvd_StateBrightness;
+        ser << dvs.vvuc_CurrentState;
+        ser << dvs.dBrightnessThreshold;
+        ser << dvs.ucChangeThreshold;
+        ser << dvs.maxCalibrationQueueSize;
+        ser << dvs.qvvuc_forCalibration;
+        return ser;
+    }
+    friend inline Serializer &operator>>(Serializer &ser, DVSEmulator &dvs)
+    {
+        ser >> dvs.vvd_StateBrightness;
+        ser >> dvs.vvuc_CurrentState;
+        ser >> dvs.dBrightnessThreshold;
+        ser >> dvs.ucChangeThreshold;
+        ser >> dvs.maxCalibrationQueueSize;
+        ser >> dvs.qvvuc_forCalibration;
+        return ser;
+    }
+
 };
 
 #endif // DVSEMULATOR_H

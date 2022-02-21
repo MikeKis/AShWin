@@ -28,6 +28,7 @@ int TimeQuant = 30;
 double derr2 = 0.;
 int nGoodQuants = 0;
 
+DYNAMIC_LIBRARY_ENTRY_POINT void SetParametersOut(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn)
 void prepare()
 {
 	size_t tact = 0;
@@ -146,7 +147,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT int Finalize(int OriginalTerminationCode)
 {
 	if (OriginalTerminationCode < 0 || !OriginalTerminationCode && tact < StartTime + OperationTime)
 		return OriginalTerminationCode;
-	if (tact < StartTime + OperationTime)
+	if (tact < StartTime || tact < StartTime + OperationTime)
 		return 0;
 	int ret = (int)(10000 - 5000 * sqrt(derr2 / nGoodQuants) / dPhaseSpaceDeviation);  
 	return max(1, ret);

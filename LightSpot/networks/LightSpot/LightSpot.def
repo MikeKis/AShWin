@@ -1,0 +1,6 @@
+LIBRARY	"LightSpot"
+EXPORTS
+SetParameters=?SetParameters@@YAXAEBVxml_node@pugi@@AEBUINetworkConfigurator@@@Z
+SetMeaningDefinitions=?SetMeaningDefinitions@@YAXAEAV?$vector@U?$pair@PEBDP6AXAEBV?$vector@V?$vector@U?$pair@HH@std@@V?$allocator@U?$pair@HH@std@@@2@@std@@V?$allocator@V?$vector@U?$pair@HH@std@@V?$allocator@U?$pair@HH@std@@@2@@std@@@2@@std@@AEAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@@Z@std@@V?$allocator@U?$pair@PEBDP6AXAEBV?$vector@V?$vector@U?$pair@HH@std@@V?$allocator@U?$pair@HH@std@@@2@@std@@V?$allocator@V?$vector@U?$pair@HH@std@@V?$allocator@U?$pair@HH@std@@@2@@std@@@2@@std@@AEAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@@Z@std@@@2@@std@@@Z
+ProcessTact=?ProcessTact@@YAXIAEBUINetworkConfigurator@@@Z
+ 
