@@ -90,7 +90,8 @@ void ActionSpecificMeanings(string strPopulationType, vector<string> &vstr_Meani
 	vstr_Meanings[11] = strPopulationType + "-LEFT3";
 }
 
-void LMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("L", vstr_Meanings);}
+void LPLUSMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("L+", vstr_Meanings);}
+void LMINUSMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("L-", vstr_Meanings);}
 void EFFMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("EFF", vstr_Meanings);}
 void GATEREWMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("GATEREW", vstr_Meanings);}
 void GATEPUNMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("GATEPUN", vstr_Meanings);}
@@ -132,6 +133,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.DestroyProjection(pilpGATELink);
+	inc.FixSection("LMINUS");   // To test that the initial configuration of LMINUS guarantees its silence
 	inc.Finalize();
 }
 
@@ -144,7 +146,8 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetMeaningDefinitions(vector<pair<const char *,
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W", WTAMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W1", WTAMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W2", WTAMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("L", LMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("LPLUS", LPLUSMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("LMINUS", LMINUSMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("EFF", EFFMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEREW", GATEREWMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEPUN", GATEPUNMeanings));
