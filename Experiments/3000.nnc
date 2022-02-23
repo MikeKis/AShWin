@@ -71,7 +71,7 @@
               <!--4 directions X 3 action powers-->
               <Structure Type="W">
               </Structure>
-              <CHARTIME>5</CHARTIME>
+              <CHARTIME>3</CHARTIME>
               <THRESHOLDDECAYPERIOD>10</THRESHOLDDECAYPERIOD>
               <THRESHOLDINC>20</THRESHOLDINC>
               <WEIGHTINC>0</WEIGHTINC>
@@ -137,10 +137,10 @@
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>3</MAXWEIGHT>
+            <MAXWEIGHT>2</MAXWEIGHT>
             <INIWEIGHT Type="DIS">
               <default>0</default>
-              <value v="1.3" share="0.3"></value>
+              <value v="1" share="0.2"></value>
             </INIWEIGHT>
           </Link>
           <Link from="LPLUS" to="LPLUS" policy="WTA">

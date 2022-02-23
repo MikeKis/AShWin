@@ -133,7 +133,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.DestroyProjection(pilpGATELink);
-	inc.FixSection("LMINUS");   // To test that the initial configuration of LMINUS guarantees its silence
+//	inc.FixSection("LMINUS");   // To test that the initial configuration of LMINUS guarantees its silence
 	inc.Finalize();
 }
 
