@@ -71,7 +71,7 @@
               <!--4 directions X 3 action powers-->
               <Structure Type="W">
               </Structure>
-              <CHARTIME>3</CHARTIME>
+              <CHARTIME>7</CHARTIME>
               <THRESHOLDDECAYPERIOD>10</THRESHOLDDECAYPERIOD>
               <THRESHOLDINC>20</THRESHOLDINC>
               <WEIGHTINC>0</WEIGHTINC>
@@ -84,6 +84,8 @@
               <N>12</N>
               <!--4 directions X 3 action powers-->
               <CHARTIME>1</CHARTIME>
+              <BURSTING_PERIOD>3</BURSTING_PERIOD>
+              <MEMORY>10</MEMORY>
               <MIGRATION>NONE</MIGRATION>
             </props>
           </Section>
@@ -91,7 +93,7 @@
             <props>
               <N>12</N>
               <!--4 directions X 3 action powers-->
-              <CHARTIME>10</CHARTIME>
+              <CHARTIME>1</CHARTIME>
               <!--It is to guarantee efficient inhibition from ACTBLOCK-->
               <MIGRATION>NONE</MIGRATION>
             </props>
@@ -137,10 +139,10 @@
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>2</MAXWEIGHT>
+            <MAXWEIGHT>5</MAXWEIGHT>
             <INIWEIGHT Type="DIS">
               <default>0</default>
-              <value v="1" share="0.2"></value>
+              <value v="2" share="0.5"></value>
             </INIWEIGHT>
           </Link>
           <Link from="LPLUS" to="LPLUS" policy="WTA">
