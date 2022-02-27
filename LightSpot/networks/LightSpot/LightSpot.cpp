@@ -10,6 +10,8 @@
 
 using namespace std;
 
+const int nWTASections = 5;
+
 void DVSMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings)
 {
 	int i = 0;
@@ -106,8 +108,11 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
 	inc.bAddNetwork(Sections);
 	inc.bConnectPopulations("DVS", "W", pilpINPLink);
-	inc.bDuplicatePopulation("W", "W1", true);
-	inc.bDuplicatePopulation("W", "W2", true);
+	string strWTASectionName = "W0";
+	FORI(nWTASections - 1) {
+		++strWTASectionName[1];
+		inc.bDuplicatePopulation("W", strWTASectionName, true);
+	}
 	inc.DestroyProjection(pilpINPLink);
 	vector<size_t> vind_EFFNeurons;
 	inc.GetNeuronIds("EFF", vind_EFFNeurons);
