@@ -10,7 +10,7 @@
 
 using namespace std;
 
-const int nWTASections = 5;
+const int nWTASections = 3;
 
 void DVSMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings)
 {
@@ -106,14 +106,37 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto pilpINPLink = inc.pilpCreateProjection(INPLink, IntersectionLinkProperties::connection_excitatory);
 	auto GATELink = xncopy.child("LinkGATE");
 	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
+	auto WMEMLink = xncopy.child("LinkWMEM");
+	auto pilpWMEMLink = inc.pilpCreateProjection(WMEMLink, IntersectionLinkProperties::connection_excitatory);
+	auto WMEMLinkInh = xncopy.child("LinkWMEMinh");
+	auto pilpWMEMLinkInh = inc.pilpCreateProjection(WMEMLinkInh, IntersectionLinkProperties::connection_inhibitory);
 	inc.bAddNetwork(Sections);
 	inc.bConnectPopulations("DVS", "W", pilpINPLink);
 	string strWTASectionName = "W0";
+	string strMEMSectionName = "MEM0";
+	int mem = 30;
 	FORI(nWTASections - 1) {
 		++strWTASectionName[1];
+		++strMEMSectionName[3];
 		inc.bDuplicatePopulation("W", strWTASectionName, true);
+		inc.bDuplicatePopulation("MEM", strMEMSectionName, true);
+		mem *= 3;
+		vector<size_t> vind_;
+		inc.GetNeuronIds(strMEMSectionName, vind_);
+		for (auto k: vind_)
+			inc.SetNeuronProperty(k, p_ThresholdExcessIncrement, (BLIFAT_THRESHOLD_EXCESS_DECREMENT + (INTERNAL_WEIGHT - THRESHOLD_BASE) / mem) * DEFAULT_BURSTING_PERIOD);
+		inc.bConnectPopulations(strWTASectionName, strMEMSectionName, pilpWMEMLink);
+		inc.bConnectPopulations(strWTASectionName, strMEMSectionName, pilpWMEMLinkInh);
 	}
+
+	// We connect W and MEM after the cyclye above - otherwise W? would be also connected to MEM (because of true argument in bDuplicatePopulation).
+
+	inc.bConnectPopulations("W", "MEM", pilpWMEMLink);
+	inc.bConnectPopulations("W", "MEM", pilpWMEMLinkInh);
+
 	inc.DestroyProjection(pilpINPLink);
+	inc.DestroyProjection(pilpWMEMLink);
+	inc.DestroyProjection(pilpWMEMLinkInh);
 	vector<size_t> vind_EFFNeurons;
 	inc.GetNeuronIds("EFF", vind_EFFNeurons);
 	for (int j = 0; j < 12; j += 3) {
