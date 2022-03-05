@@ -32,11 +32,26 @@
             <min>1</min>
             <max>1</max>
           </DELAY>
-          <INIWEIGHT Type="DIS">
-            <default>10</default>
-          </INIWEIGHT>
+          <WEIGHT>10</WEIGHT>
           <FIXED></FIXED>
         </LinkGATE>
+        <LinkWMEM policy="one-to-one">
+          <!--From Reward/Punishment to ACTGATE-->
+          <DELAY Type="UNI">
+            <min>29</min>
+            <max>29</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+          <FIXED></FIXED>
+        </LinkWMEM>
+        <LinkWMEMinh policy="one-to-one">
+          <!--From Reward/Punishment to ACTGATE-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+        </LinkWMEMinh>
         <Sections>
           <Section name="-W">
             <props>
@@ -52,12 +67,23 @@
               <MIGRATION>INSIDE</MIGRATION>
             </props>
           </Section>
+          <Section name="+MEM">
+            <props>
+              <N>100</N>
+              <Structure Type="W">
+              </Structure>
+              <CHARTIME>10</CHARTIME>
+              <MEMORY>30</MEMORY>
+              <!--The rest will be 90 and 270-->
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
           <Section name="+LPLUS">
             <props>
               <N>12</N>  <!--4 directions X 3 action powers-->
               <Structure Type="W">
               </Structure>
-              <CHARTIME>10</CHARTIME>
+              <CHARTIME>7</CHARTIME>
               <THRESHOLDDECAYPERIOD>10</THRESHOLDDECAYPERIOD>
               <THRESHOLDINC>20</THRESHOLDINC>
               <WEIGHTINC>0</WEIGHTINC>
@@ -119,7 +145,7 @@
             </props>
           </Section>
           <Link from="W" to="W" policy="WTA">
-            <MAXWEIGHT>10</MAXWEIGHT>
+            <WEIGHT>10</WEIGHT>
           </Link>
           <Link from="W" to="LPLUS" policy="all-to-all" type="excitatory">
             <!--From WTA to learning layer L-->
@@ -127,10 +153,10 @@
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>7</MAXWEIGHT>
+            <MAXWEIGHT>5</MAXWEIGHT>
             <INIWEIGHT Type="DIS">
               <default>0</default>
-              <value v="3" share="0.7"></value>
+              <value v="2" share="0.5"></value>
             </INIWEIGHT>
           </Link>
           <Link from="W" to="LMINUS" policy="all-to-all" type="excitatory">
@@ -145,17 +171,37 @@
               <value v="2" share="0.5"></value>
             </INIWEIGHT>
           </Link>
-          <Link from="LPLUS" to="LPLUS" policy="WTA">
-            <MAXWEIGHT>100</MAXWEIGHT>
+          <Link from="MEM" to="LPLUS" policy="all-to-all" type="excitatory">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <MAXWEIGHT>5</MAXWEIGHT>
+            <INIWEIGHT Type="DIS">
+              <default>0</default>
+              <value v="2" share="0.5"></value>
+            </INIWEIGHT>
+          </Link>
+          <Link from="MEM" to="LMINUS" policy="all-to-all" type="excitatory">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <MAXWEIGHT>5</MAXWEIGHT>
+            <INIWEIGHT Type="DIS">
+              <default>0</default>
+              <value v="2" share="0.5"></value>
+            </INIWEIGHT>
+          </Link>
+          <Link from="LPLUS" to="LPLUS" policy="WTA" type="inhibitory">
+            <WEIGHT>100</WEIGHT>
           </Link>
           <Link from="LMINUS" to="ACTBLOCK" policy="one-to-one">
             <DELAY Type="UNI">
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <INIWEIGHT Type="DIS">
-              <default>10</default>
-            </INIWEIGHT>
+            <WEIGHT>10</WEIGHT>
             <FIXED></FIXED>
           </Link>
           <Link from="ACTBLOCK" to="LPLUS" policy="one-to-one">
@@ -163,23 +209,21 @@
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>100</MAXWEIGHT>
+            <WEIGHT>100</WEIGHT>
           </Link>
           <Link from="ACTBLOCK" to="EFF" policy="one-to-one">
             <DELAY Type="UNI">
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>100</MAXWEIGHT>
+            <WEIGHT>100</WEIGHT>
           </Link>
           <Link from="LPLUS" to="EFF" policy="one-to-one" type="excitatory">
             <DELAY Type="UNI">
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <INIWEIGHT Type="DIS">
-              <default>10</default>
-            </INIWEIGHT>
+            <WEIGHT>10</WEIGHT>
             <FIXED></FIXED>
           </Link>
           <Link from="EFF" to="GATEREW" policy="one-to-one" type="activating">
@@ -187,28 +231,28 @@
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>100</MAXWEIGHT>
+            <WEIGHT>100</WEIGHT>
           </Link>
           <Link from="EFF" to="GATEPUN" policy="one-to-one" type="activating">
             <DELAY Type="UNI">
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>100</MAXWEIGHT>
+            <WEIGHT>100</WEIGHT>
           </Link>
           <Link from="GATEREW" to="LPLUS" policy="one-to-one" type="reward">
             <DELAY Type="UNI">
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>1</MAXWEIGHT>
+            <WEIGHT>1</WEIGHT>
           </Link>
           <Link from="GATEPUN" to="LMINUS" policy="one-to-one" type="reward">
             <DELAY Type="UNI">
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>1</MAXWEIGHT>
+            <WEIGHT>1</WEIGHT>
           </Link>
         </Sections>
       </args>
