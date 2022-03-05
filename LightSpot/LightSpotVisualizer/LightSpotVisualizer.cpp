@@ -18,24 +18,40 @@ class EnvironmentState
 public:
 	volatile pair<float, float> *pprr_CameraCenter;
 	volatile pair<float, float> *pprr_SpotCenter = NULL;
-	EnvironmentState()
+	EnvironmentState(bool bDestroyOldState)
 	{
-		do {
-			try {
-				//Create a shared memory object.
-				shm.reset(new shared_memory_object(open_only, ENVIRONMENT_STATE_SHARED_MEMORY_NAME, read_only));
+		if (!bDestroyOldState)
+			do {
+				try {
+					//Create a shared memory object.
+					shm.reset(new shared_memory_object(open_only, ENVIRONMENT_STATE_SHARED_MEMORY_NAME, read_only));
 
-				//Set size
-		//		shm->truncate(sizeof(pair<pair<float, float>, pair<float, float> >));
+					//Set size
+			//		shm->truncate(sizeof(pair<pair<float, float>, pair<float, float> >));
 
-				//Map the whole shared memory in this process
-				region.reset(new mapped_region(*shm, read_only));
-				pprr_CameraCenter = (volatile pair<float, float> *)region->get_address();
-				pprr_SpotCenter = &((volatile pair<pair<float, float>, pair<float, float> > *)pprr_CameraCenter)->second;
-			} catch (...) {
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-			}
-		} while (!pprr_SpotCenter);
+					//Map the whole shared memory in this process
+					region.reset(new mapped_region(*shm, read_only));
+					pprr_CameraCenter = (volatile pair<float, float> *)region->get_address();
+					pprr_SpotCenter = &((volatile pair<pair<float, float>, pair<float, float> > *)pprr_CameraCenter)->second;
+				} catch (...) {
+					boost::this_thread::sleep(boost::posix_time::seconds(1));
+				}
+			} while (!pprr_SpotCenter);
+		else {
+			string strSharedMemoryName = ENVIRONMENT_STATE_SHARED_MEMORY_NAME;
+			bool bExists = true;
+			do {
+				try {
+					//Create a shared memory object.
+					shm.reset(new shared_memory_object(open_only, strSharedMemoryName.c_str(), read_only));
+					shared_memory_object::remove(strSharedMemoryName.c_str());
+					++strSharedMemoryName.front();
+				}
+				catch (...) {
+					bExists = false;
+				}
+			} while (bExists);
+		}
 	}
 	~EnvironmentState() {}
 
@@ -51,10 +67,15 @@ public:
 inline float rPixelX(float rPhysical) {return (rPhysical + 1.F) * EXACT_RASTER_SIZE;}
 inline float rPixelY(float rPhysical) {return (1.F - rPhysical) * EXACT_RASTER_SIZE;}
 
-int main()
+int main(int ARGC, char *ARGV[])
 {
+	bool bDestroyOldState = ARGC == 2;
 	cout << "Waiting for LightSpot data availability...\n";
-	EnvironmentState es;
+	EnvironmentState es(bDestroyOldState);
+	if (bDestroyOldState) {
+		cout << "All resident LightSpot data are destroyed\n";
+		exit(0);
+	}
 	cout << "LightSpot data are obtained\n";
 	// Create the main window
 	sf::RenderWindow window(sf::VideoMode(EXACT_RASTER_SIZE * 2, EXACT_RASTER_SIZE * 2), "LightSpot", sf::Style::Close);
