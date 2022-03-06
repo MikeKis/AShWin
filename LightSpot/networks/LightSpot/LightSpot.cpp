@@ -103,11 +103,34 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto pilpINPLink = inc.pilpCreateProjection(INPLink, IntersectionLinkProperties::connection_excitatory);
 	auto GATELink = xncopy.child("LinkGATE");
 	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
+	auto WMEMLink = xncopy.child("LinkWMEM");
+	auto pilpWMEMLink = inc.pilpCreateProjection(WMEMLink, IntersectionLinkProperties::connection_excitatory);
+	auto WMEMLinkInh = xncopy.child("LinkWMEMinh");
+	auto pilpWMEMLinkInh = inc.pilpCreateProjection(WMEMLinkInh, IntersectionLinkProperties::connection_inhibitory);
 	inc.bAddNetwork(Sections);
 	inc.bConnectPopulations("DVS", "W", pilpINPLink);
 	inc.bDuplicatePopulation("W", "W1", true);
+	inc.bDuplicatePopulation("MEM", "MEM1", true);
+	int mem = 300;
+	vector<size_t> vind_;
+	inc.GetNeuronIds("MEM1", vind_);
+	for (auto k: vind_)
+		inc.SetNeuronProperty(k, p_ThresholdExcessIncrement, (BLIFAT_THRESHOLD_EXCESS_DECREMENT + (INTERNAL_WEIGHT - THRESHOLD_BASE) / mem) * DEFAULT_BURSTING_PERIOD);
+	inc.bConnectPopulations("W1", "MEM1", pilpWMEMLink);
+	inc.bConnectPopulations("W1", "MEM1", pilpWMEMLinkInh);
 	inc.bDuplicatePopulation("W", "W2", true);
+	inc.bDuplicatePopulation("MEM", "MEM2", true);
+	mem = 900;
+	inc.GetNeuronIds("MEM2", vind_);
+	for (auto k: vind_)
+		inc.SetNeuronProperty(k, p_ThresholdExcessIncrement, (BLIFAT_THRESHOLD_EXCESS_DECREMENT + (INTERNAL_WEIGHT - THRESHOLD_BASE) / mem) * DEFAULT_BURSTING_PERIOD);
+	inc.bConnectPopulations("W2", "MEM2", pilpWMEMLink);
+	inc.bConnectPopulations("W2", "MEM2", pilpWMEMLinkInh);
+	inc.bConnectPopulations("W", "MEM", pilpWMEMLink);
+	inc.bConnectPopulations("W", "MEM", pilpWMEMLinkInh);
 	inc.DestroyProjection(pilpINPLink);
+	inc.DestroyProjection(pilpWMEMLink);
+	inc.DestroyProjection(pilpWMEMLinkInh);
 	vector<size_t> vind_EFFNeurons;
 	inc.GetNeuronIds("EFF", vind_EFFNeurons);
 	for (int j = 0; j < 12; j += 3) {

@@ -35,6 +35,23 @@
           <WEIGHT>10</WEIGHT>
           <FIXED></FIXED>
         </LinkGATE>
+        <LinkWMEM policy="one-to-one">
+          <!--From Reward/Punishment to ACTGATE-->
+          <DELAY Type="UNI">
+            <min>29</min>
+            <max>29</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+          <FIXED></FIXED>
+        </LinkWMEM>
+        <LinkWMEMinh policy="one-to-one">
+          <!--From Reward/Punishment to ACTGATE-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+        </LinkWMEMinh>
         <Sections>
           <Section name="-W">
             <props>
@@ -48,6 +65,17 @@
               <THRESHOLDINC>0</THRESHOLDINC>
               <PLASTICITYTIME>14</PLASTICITYTIME>
               <MIGRATION>INSIDE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="+MEM">
+            <props>
+              <N>100</N>
+              <Structure Type="W">
+              </Structure>
+              <CHARTIME>10</CHARTIME>
+              <MEMORY>100</MEMORY>
+              <!--The rest will be 90 and 270-->
+              <MIGRATION>NONE</MIGRATION>
             </props>
           </Section>
           <Section name="-L">
@@ -103,7 +131,19 @@
             <MAXWEIGHT>5</MAXWEIGHT>
             <INIWEIGHT Type="DIS">
               <default>0</default>
-              <value v="3" share="0.7"></value>
+              <value v="2" share="0.5"></value>
+            </INIWEIGHT>
+          </Link>
+          <Link from="MEM" to="L" policy="all-to-all" type="excitatory">
+            <!--From WTA to learning layer L-->
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <MAXWEIGHT>5</MAXWEIGHT>
+            <INIWEIGHT Type="DIS">
+              <default>0</default>
+              <value v="2" share="0.5"></value>
             </INIWEIGHT>
           </Link>
           <Link from="L" to="L" policy="WTA">
