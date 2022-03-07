@@ -63,7 +63,7 @@ void DVSEmulator::Calibrate(float rTargetSpikeFrequency)
     double dnTargetSpikes = rTargetSpikeFrequency * (qvvuc_forCalibration.size() * qvvuc_forCalibration.front().size() * qvvuc_forCalibration.front().front().size());
     if (!dnTargetSpikes)
         throw std::runtime_error("invalid calibration parameters");
-    dBrightnessThreshold = tot / dnTargetSpikes;
+    dBrightnessThreshold = tot / (dnTargetSpikes * 0.5);   // dynamic correction -- stress on dynamical spikes
     dnTargetSpikes *= 2;
     for(ucChangeThreshold = 1; ucChangeThreshold < 128; ++ucChangeThreshold) {
         auto CurrentLevel = qvvuc_forCalibration.front();
@@ -89,6 +89,7 @@ void DVSEmulator::Calibrate(float rTargetSpikeFrequency)
         if (nSpikes <= dnTargetSpikes)
             break;
     }
+	ucChangeThreshold /= 1.5;   // dynamic correction -- stress on dynamical spikes
     if (ucChangeThreshold == 128)
         throw std::runtime_error("invalid calibration parameters");
 }

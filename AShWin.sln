@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightSpotEnvironment", "Lig
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightSpotVisualizer", "LightSpot\LightSpotVisualizer\LightSpotVisualizer.vcxproj", "{3CD66BA6-6255-4E36-8C74-B233DD81C921}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "LightSpotResult", "LightSpot\LightSpotResult\LightSpotResult.pyproj", "{535B94C5-AD50-42D7-938A-53BA2F4EB6E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -119,6 +121,12 @@ Global
 		{3CD66BA6-6255-4E36-8C74-B233DD81C921}.Release|x64.Build.0 = Release|x64
 		{3CD66BA6-6255-4E36-8C74-B233DD81C921}.Release|x86.ActiveCfg = Release|Win32
 		{3CD66BA6-6255-4E36-8C74-B233DD81C921}.Release|x86.Build.0 = Release|Win32
+		{535B94C5-AD50-42D7-938A-53BA2F4EB6E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{535B94C5-AD50-42D7-938A-53BA2F4EB6E5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{535B94C5-AD50-42D7-938A-53BA2F4EB6E5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{535B94C5-AD50-42D7-938A-53BA2F4EB6E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{535B94C5-AD50-42D7-938A-53BA2F4EB6E5}.Release|x64.ActiveCfg = Release|Any CPU
+		{535B94C5-AD50-42D7-938A-53BA2F4EB6E5}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -132,6 +140,7 @@ Global
 		{67C1B6B7-F223-4EF4-876F-714BBE0E88A3} = {AE1907DE-BEF9-4701-9AF1-ED76FAC7B6F0}
 		{1BBA29F3-4475-403F-B2BB-FFA40D91D024} = {61F00BAD-F61B-483A-9E70-4F03D1A74419}
 		{3CD66BA6-6255-4E36-8C74-B233DD81C921} = {61F00BAD-F61B-483A-9E70-4F03D1A74419}
+		{535B94C5-AD50-42D7-938A-53BA2F4EB6E5} = {61F00BAD-F61B-483A-9E70-4F03D1A74419}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4A2DA237-49E5-43AA-A1E5-FB49DAF7D5CB}

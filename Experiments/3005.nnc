@@ -55,7 +55,7 @@
               <N>12</N>  <!--4 directions X 3 action powers-->
               <Structure Type="W">
               </Structure>
-              <CHARTIME>7</CHARTIME>
+              <CHARTIME>10</CHARTIME>
               <THRESHOLDDECAYPERIOD>10</THRESHOLDDECAYPERIOD>
               <THRESHOLDINC>20</THRESHOLDINC>
               <WEIGHTINC>0</WEIGHTINC>
@@ -100,7 +100,7 @@
               <min>1</min>
               <max>1</max>
             </DELAY>
-            <MAXWEIGHT>5</MAXWEIGHT>
+            <MAXWEIGHT>7</MAXWEIGHT>
             <INIWEIGHT Type="DIS">
               <default>0</default>
               <value v="3" share="0.7"></value>
