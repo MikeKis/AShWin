@@ -47,7 +47,7 @@ const unsigned minSpotPassageTime_ms = 300;
 const unsigned maxSpotPassageTime_ms = 1000;
 
 const double dFriction = 0.03;
-const float rSpikeEffect = 0.03F;
+const float rSpikeEffect = 0.06F;
 const double dTargetRange = 0.15;
 const int TargetReachedSpikePeriod = 6;
 
