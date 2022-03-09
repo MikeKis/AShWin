@@ -414,14 +414,15 @@ LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing,
 {
 	for (auto i: v_Firing) {
 		int Direction = i / 3;
+		float rEffect = (i % 3 + 1) * rSpikeEffect;
 		switch (Direction) {
-			case 0: prr_CameraSpeed.second += rSpikeEffect;
+			case 0: prr_CameraSpeed.second += rEffect;
 				    break;
-			case 1: prr_CameraSpeed.first += rSpikeEffect;
+			case 1: prr_CameraSpeed.first += rEffect;
 				    break;
-			case 2: prr_CameraSpeed.second -= rSpikeEffect;
+			case 2: prr_CameraSpeed.second -= rEffect;
 				    break;
-			case 3: prr_CameraSpeed.first -= rSpikeEffect;
+			case 3: prr_CameraSpeed.first -= rEffect;
 				    break;
 		}
 	}

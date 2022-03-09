@@ -108,7 +108,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	inc.bDuplicatePopulation("W", "W1", true);
 	inc.bDuplicatePopulation("W", "W2", true);
 	inc.DestroyProjection(pilpINPLink);
-	vector<size_t> vind_EFFNeurons;
+/*	vector<size_t> vind_EFFNeurons;
 	inc.GetNeuronIds("EFF", vind_EFFNeurons);
 	for (int j = 0; j < 12; j += 3) {
 
@@ -128,7 +128,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 		inc.SetNeuronProperty(vind_EFFNeurons[j + 2], p_ThresholdExcessDecrement, 10000);
 		inc.SetNeuronProperty(vind_EFFNeurons[j + 2], p_ThresholdExcessIncrement, INTERNAL_WEIGHT * 1.33);
 
-	}
+	} */
 	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.DestroyProjection(pilpGATELink);
