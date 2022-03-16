@@ -75,10 +75,52 @@ indLsection = 1
 
 Lneu = [n for n in range(len(neusec[0])) if neusec[0][n] == indLsection]
 
+
+MeaningDynamics = []
 for t in tact:
     print('tact ', t)
+    MeaningDynamics.append([])
     for i in range(len(Lneu)):
         print('\tL neuron ', i)
         strong = [-1 - l.src for l in lin if l.tact == t and l.neu == Lneu[i] and l.W > 30]
         mea = [n.meaning for n in neu if n.tact == t and n.neu in strong]
         print(mea)
+        MeaningDynamics[-1].append(mea)
+
+final = MeaningDynamics[-1]
+
+def ParseReceptiveField(mea, type = ''):
+    if type == '':
+        return [ParseReceptiveField(mea, type = 'D'), ParseReceptiveField(mea, type = 'A'), ParseReceptiveField(mea, type = 'I')]
+    ind = mea.find(type)
+    if ind == -1:
+        return []
+    else:
+        indbeg = mea.find('(', ind) + 1
+        indend = mea.find(')', ind)
+        str = mea[indbeg:indend]
+        lstr = str.split(',')
+        return [float(lstr[0]), float(lstr[1])]
+
+fin = [[ParseReceptiveField(mea) for mea in m if mea.find('-') == -1] for m in final]
+
+print(fin)
+
+fin = fin[9:]
+
+c = ['r', 'g', 'b']
+fig, ax = plt.subplots(subplot_kw=dict(aspect='equal'))
+ax.set(xlim=(0, 20), ylim=(0, 20), xticks=[], yticks=[])
+for i in range (len(fin)):
+    for a in fin[i]:
+        if len(a[0]) == 0 and len(a[2]) == 0:
+            circle = plt.Circle((a[1][0], a[1][1]), 0.2, color = c[i])
+            ax.add_patch(circle)
+        else:
+            if len(a[0]) > 0 and len(a[1]) > 0:
+                arr = plt.Arrow(a[0][0], a[0][1], a[1][0] - a[0][0], a[1][1] - a[0][1], width=0.1, ec = c[i], fc = c[i])
+                ax.add_patch(arr)
+            if len(a[2]) > 0 and len(a[1]) > 0:
+                arr = plt.Arrow(a[1][0], a[1][1], a[2][0] - a[1][0], a[2][1] - a[1][1], width=0.1, ec = c[i], fc = c[i])
+                ax.add_patch(arr)
+plt.show()

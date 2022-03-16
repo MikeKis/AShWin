@@ -10,6 +10,13 @@
   <Receptors name="Reward" N="1">
     <Implementation lib="LightSpotEnvironment"></Implementation>
   </Receptors>
+  <Receptors name="Poisson" N="12">
+    <Implementation lib="fromFile">
+      <args>
+        <Noise>0.01</Noise>
+      </args>
+    </Implementation>
+  </Receptors>
   <Sections>
     <Implementation lib="LightSpot">
       <args>
@@ -35,6 +42,15 @@
           <WEIGHT>10</WEIGHT>
           <FIXED></FIXED>
         </LinkGATE>
+        <LinkPoisson policy="one-to-one">
+          <!--From Poisson to SENSORYGATE-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+          <FIXED></FIXED>
+        </LinkPoisson>
         <Sections>
           <Section name="-W">
             <props>
@@ -91,6 +107,16 @@
               <MIGRATION>NONE</MIGRATION>
             </props>
           </Section>
+          <Section name="+SENSORYGATE">
+            <props>
+              <N>12</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>30</CHARTIME>
+              <THRESHOLDDECAYPERIOD>1</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>0</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
           <Link from="W" to="W" policy="WTA">
             <WEIGHT>10</WEIGHT>
           </Link>
@@ -105,6 +131,13 @@
               <default>0</default>
               <value v="3" share="0.7"></value>
             </INIWEIGHT>
+          </Link>
+          <Link from="W" to="SENSORYGATE" policy="all-to-all" type="inhibitory">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>1</WEIGHT>
           </Link>
           <Link from="L" to="L" policy="WTA">
             <WEIGHT>100</WEIGHT>
@@ -144,6 +177,14 @@
               <max>1</max>
             </DELAY>
             <WEIGHT>-1</WEIGHT>
+          </Link>
+          <Link from="SENSORYGATE" to="L" policy="one-to-one">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>10</WEIGHT>
+            <FIXED></FIXED>
           </Link>
         </Sections>
       </args>

@@ -103,6 +103,8 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto pilpINPLink = inc.pilpCreateProjection(INPLink, IntersectionLinkProperties::connection_excitatory);
 	auto GATELink = xncopy.child("LinkGATE");
 	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
+	auto PoissonLink = xncopy.child("LinkPoisson");
+	auto pilpPoissonLink = inc.pilpCreateProjection(PoissonLink, IntersectionLinkProperties::connection_excitatory);
 	inc.bAddNetwork(Sections);
 	inc.bConnectPopulations("DVS", "W", pilpINPLink);
 	inc.bDuplicatePopulation("W", "W1", true);
@@ -131,7 +133,9 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	} */
 	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
+	inc.bConnectPopulations("Poisson", "SENSORYGATE", pilpPoissonLink);
 	inc.DestroyProjection(pilpGATELink);
+	inc.DestroyProjection(pilpPoissonLink);
 	inc.Finalize();
 }
 
