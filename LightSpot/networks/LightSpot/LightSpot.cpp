@@ -134,6 +134,9 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Poisson", "SENSORYGATE", pilpPoissonLink);
+	inc.bConnectPopulations("Reward", "GATEREWH", pilpGATELink);   // LPLUSPopulation should be finalized!
+	inc.bConnectPopulations("Punishment", "GATEPUNH", pilpGATELink);   // LPLUSPopulation should be finalized!
+	inc.bConnectPopulations("PoissonH", "SENSORYGATEH", pilpPoissonLink);
 	inc.DestroyProjection(pilpGATELink);
 	inc.DestroyProjection(pilpPoissonLink);
 	inc.Finalize();
@@ -148,10 +151,10 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetMeaningDefinitions(vector<pair<const char *,
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W", WTAMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W1", WTAMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W2", WTAMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("L", LMeanings));
+/*	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("L", LMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("EFF", EFFMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEREW", GATEREWMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEPUN", GATEPUNMeanings));
+	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEPUN", GATEPUNMeanings)); */
 }
 
 DYNAMIC_LIBRARY_ENTRY_POINT void ProcessTact(unsigned CurrentTact, const INetworkConfigurator &inc)

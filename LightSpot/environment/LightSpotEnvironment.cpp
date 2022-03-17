@@ -418,9 +418,9 @@ LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing,
 		switch (Direction) {
 			case 0: prr_CameraSpeed.second += rEffect;
 				    break;
-			case 1: prr_CameraSpeed.first += rEffect;
+			case 2: prr_CameraSpeed.first += rEffect;
 				    break;
-			case 2: prr_CameraSpeed.second -= rEffect;
+			case 1: prr_CameraSpeed.second -= rEffect;
 				    break;
 			case 3: prr_CameraSpeed.first -= rEffect;
 				    break;

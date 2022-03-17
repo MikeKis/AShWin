@@ -10,7 +10,14 @@
   <Receptors name="Reward" N="1">
     <Implementation lib="LightSpotEnvironment"></Implementation>
   </Receptors>
-  <Receptors name="Poisson" N="12">
+  <Receptors name="Poisson" N="6">
+    <Implementation lib="fromFile">
+      <args>
+        <Noise>0.01</Noise>
+      </args>
+    </Implementation>
+  </Receptors>
+  <Receptors name="PoissonH" N="6">
     <Implementation lib="fromFile">
       <args>
         <Noise>0.01</Noise>
@@ -68,7 +75,7 @@
           </Section>
           <Section name="-L">
             <props>
-              <N>12</N>  <!--4 directions X 3 action powers-->
+              <N>6</N>  <!--4 directions X 3 action powers-->
               <Structure Type="W">
               </Structure>
               <CHARTIME>10</CHARTIME>
@@ -81,7 +88,7 @@
           </Section>
           <Section name="+EFF">
             <props>
-              <N>12</N>
+              <N>6</N>
               <!--4 directions X 3 action powers-->
               <CHARTIME>1</CHARTIME>
               <MIGRATION>NONE</MIGRATION>
@@ -89,7 +96,7 @@
           </Section>
           <Section name="-GATEREW">
             <props>
-              <N>12</N>
+              <N>6</N>
               <!--4 directions X 3 action powers-->
               <CHARTIME>10</CHARTIME>
               <THRESHOLDDECAYPERIOD>100</THRESHOLDDECAYPERIOD>
@@ -99,7 +106,7 @@
           </Section>
           <Section name="-GATEPUN">
             <props>
-              <N>12</N>
+              <N>6</N>
               <!--4 directions X 3 action powers-->
               <CHARTIME>10</CHARTIME>
               <THRESHOLDDECAYPERIOD>100</THRESHOLDDECAYPERIOD>
@@ -109,7 +116,59 @@
           </Section>
           <Section name="+SENSORYGATE">
             <props>
-              <N>12</N>
+              <N>6</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>30</CHARTIME>
+              <THRESHOLDDECAYPERIOD>1</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>0</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="-LH">
+            <props>
+              <N>6</N>
+              <!--4 directions X 3 action powers-->
+              <Structure Type="W">
+              </Structure>
+              <CHARTIME>10</CHARTIME>
+              <THRESHOLDDECAYPERIOD>10</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>20</THRESHOLDINC>
+              <WEIGHTINC>0</WEIGHTINC>
+              <PLASTICITYTIME>50</PLASTICITYTIME>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="+EFFH">
+            <props>
+              <N>6</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>1</CHARTIME>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="-GATEREWH">
+            <props>
+              <N>6</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>10</CHARTIME>
+              <THRESHOLDDECAYPERIOD>100</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>100</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="-GATEPUNH">
+            <props>
+              <N>6</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>10</CHARTIME>
+              <THRESHOLDDECAYPERIOD>100</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>100</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="+SENSORYGATEH">
+            <props>
+              <N>6</N>
               <!--4 directions X 3 action powers-->
               <CHARTIME>30</CHARTIME>
               <THRESHOLDDECAYPERIOD>1</THRESHOLDDECAYPERIOD>
@@ -186,11 +245,78 @@
             <WEIGHT>10</WEIGHT>
             <FIXED></FIXED>
           </Link>
+          <Link from="W" to="LH" policy="all-to-all" type="excitatory">
+            <!--From WTA to learning layer L-->
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <MAXWEIGHT>7</MAXWEIGHT>
+            <INIWEIGHT Type="DIS">
+              <default>0</default>
+              <value v="3" share="0.7"></value>
+            </INIWEIGHT>
+          </Link>
+          <Link from="W" to="SENSORYGATEH" policy="all-to-all" type="inhibitory">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>1</WEIGHT>
+          </Link>
+          <Link from="LH" to="LH" policy="WTA">
+            <WEIGHT>100</WEIGHT>
+          </Link>
+          <Link from="LH" to="EFFH" policy="one-to-one" type="excitatory">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>10</WEIGHT>
+            <FIXED></FIXED>
+          </Link>
+          <Link from="LH" to="GATEREWH" policy="one-to-one" type="activating">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>100</WEIGHT>
+          </Link>
+          <Link from="LH" to="GATEPUNH" policy="one-to-one" type="activating">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>100</WEIGHT>
+          </Link>
+          <Link from="GATEREWH" to="LH" policy="one-to-one" type="reward">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>1</WEIGHT>
+          </Link>
+          <Link from="GATEPUNH" to="LH" policy="one-to-one" type="reward">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>-1</WEIGHT>
+          </Link>
+          <Link from="SENSORYGATEH" to="LH" policy="one-to-one">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>10</WEIGHT>
+            <FIXED></FIXED>
+          </Link>
         </Sections>
       </args>
     </Implementation>
   </Sections>
   <Readout lib="LightSpotEnvironment">
     <output>EFF</output>
+    <output>EFFH</output>
   </Readout>
 </Network>  
