@@ -95,6 +95,10 @@ void EFFMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Syna
 void GATEREWMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("GATEREW", vstr_Meanings);}
 void GATEPUNMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {ActionSpecificMeanings("GATEPUN", vstr_Meanings);}
 
+IntersectionLinkProperties *pilpLLLink;
+
+DYNAMIC_LIBRARY_ENTRY_POINT const IntersectionLinkProperties *GetLinkLL(const euclidean_space_point &espPresynaptic, const euclidean_space_point &espPostsynaptic) {return abs(espPresynaptic[0] - espPostsynaptic[0]) == 0.5 ? pilpLLLink : nullptr;}
+
 DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const INetworkConfigurator &inc)
 { 
 	auto xncopy = xn;
@@ -105,38 +109,18 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
 	auto PoissonLink = xncopy.child("LinkPoisson");
 	auto pilpPoissonLink = inc.pilpCreateProjection(PoissonLink, IntersectionLinkProperties::connection_excitatory);
+	auto LLLink = xncopy.child("LinkLL");
+	pilpLLLink = inc.pilpCreateProjection(LLLink, IntersectionLinkProperties::connection_inhibitory);
 	inc.bAddNetwork(Sections);
 	inc.bConnectPopulations("DVS", "W", pilpINPLink);
 	inc.bDuplicatePopulation("W", "W1", true);
 	inc.bDuplicatePopulation("W", "W2", true);
 	inc.DestroyProjection(pilpINPLink);
-/*	vector<size_t> vind_EFFNeurons;
-	inc.GetNeuronIds("EFF", vind_EFFNeurons);
-	for (int j = 0; j < 12; j += 3) {
-
-		// 1st neuron should spike only once on activation from LPLUSPopulation
-
-		inc.SetNeuronProperty(vind_EFFNeurons[j], p_BurstingPeriod, 0);
-
-		// 2nd neuron should emit 2 spikes on activation from LPLUSPopulation
-
-		inc.SetNeuronProperty(vind_EFFNeurons[j + 1], p_BurstingPeriod, 3);
-		inc.SetNeuronProperty(vind_EFFNeurons[j + 1], p_ThresholdExcessDecrement, 10000);
-		inc.SetNeuronProperty(vind_EFFNeurons[j + 1], p_ThresholdExcessIncrement, INTERNAL_WEIGHT * 1.5);
-
-		// 3nd neuron should emit 3 spikes on activation from LPLUSPopulation
-
-		inc.SetNeuronProperty(vind_EFFNeurons[j + 2], p_BurstingPeriod, 3);
-		inc.SetNeuronProperty(vind_EFFNeurons[j + 2], p_ThresholdExcessDecrement, 10000);
-		inc.SetNeuronProperty(vind_EFFNeurons[j + 2], p_ThresholdExcessIncrement, INTERNAL_WEIGHT * 1.33);
-
-	} */
+	inc.bConnectPopulations("L", "L", GetLinkLL);
+	inc.DestroyProjection(pilpLLLink);
 	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
 	inc.bConnectPopulations("Poisson", "SENSORYGATE", pilpPoissonLink);
-	inc.bConnectPopulations("Reward", "GATEREWH", pilpGATELink);   // LPLUSPopulation should be finalized!
-	inc.bConnectPopulations("Punishment", "GATEPUNH", pilpGATELink);   // LPLUSPopulation should be finalized!
-	inc.bConnectPopulations("PoissonH", "SENSORYGATEH", pilpPoissonLink);
 	inc.DestroyProjection(pilpGATELink);
 	inc.DestroyProjection(pilpPoissonLink);
 	inc.Finalize();

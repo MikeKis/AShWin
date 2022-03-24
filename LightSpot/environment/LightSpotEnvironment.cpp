@@ -47,11 +47,13 @@ const unsigned minSpotPassageTime_ms = 300;
 const unsigned maxSpotPassageTime_ms = 1000;
 
 const double dFriction = 0.03;
-const float rSpikeEffect = 0.03F;
+const float rSpikeEffect = 0.01F;
 const double dTargetRange = 0.15;
 const int TargetReachedSpikePeriod = 6;
 
 const double dDistanceChangeThreshold = 0.1;
+
+const int NNeuronsperDirection = 13;
 
 class RandomNumberGenerator
 {
@@ -413,16 +415,15 @@ LIGHTSPOTENVIRONMENT_EXPORT void SetParametersOut(int ExperimentId, size_t tactT
 LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing, int nEquilibriumPeriods)
 {
 	for (auto i: v_Firing) {
-		int Direction = i / 3;
-		float rEffect = (i % 3 + 1) * rSpikeEffect;
+		int Direction = i / NNeuronsperDirection;
 		switch (Direction) {
-			case 0: prr_CameraSpeed.second += rEffect;
+			case 0: prr_CameraSpeed.second += rSpikeEffect;
 				    break;
-			case 2: prr_CameraSpeed.first += rEffect;
+			case 1: prr_CameraSpeed.first += rSpikeEffect;
 				    break;
-			case 1: prr_CameraSpeed.second -= rEffect;
+			case 2: prr_CameraSpeed.second -= rSpikeEffect;
 				    break;
-			case 3: prr_CameraSpeed.first -= rEffect;
+			case 3: prr_CameraSpeed.first -= rSpikeEffect;
 				    break;
 		}
 	}
