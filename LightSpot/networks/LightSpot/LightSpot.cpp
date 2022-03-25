@@ -105,6 +105,8 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto Sections = xncopy.child("Sections");
 	auto INPLink = xncopy.child("LinkINP");
 	auto pilpINPLink = inc.pilpCreateProjection(INPLink, IntersectionLinkProperties::connection_excitatory);
+	auto INPGATELink = xncopy.child("LinkINPGATE");
+	auto pilpINPGATELink = inc.pilpCreateProjection(INPGATELink, IntersectionLinkProperties::connection_excitatory);
 	auto GATELink = xncopy.child("LinkGATE");
 	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
 	auto PoissonLink = xncopy.child("LinkPoisson");
@@ -112,10 +114,10 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto LLLink = xncopy.child("LinkLL");
 	pilpLLLink = inc.pilpCreateProjection(LLLink, IntersectionLinkProperties::connection_inhibitory);
 	inc.bAddNetwork(Sections);
-	inc.bConnectPopulations("DVS", "W", pilpINPLink);
-	inc.bDuplicatePopulation("W", "W1", true);
-	inc.bDuplicatePopulation("W", "W2", true);
+	inc.bConnectPopulations("DVS", "L", pilpINPLink);
 	inc.DestroyProjection(pilpINPLink);
+	inc.bConnectPopulations("DVS", "SENSORYGATE", pilpINPGATELink);
+	inc.DestroyProjection(pilpINPGATELink);
 	inc.bConnectPopulations("L", "L", GetLinkLL);
 	inc.DestroyProjection(pilpLLLink);
 	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
@@ -132,13 +134,6 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetMeaningDefinitions(vector<pair<const char *,
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("DVS", DVSMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("Reward", RewardMeanings));
 	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("Punishment", PunishmentMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W", WTAMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W1", WTAMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("W2", WTAMeanings));
-/*	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("L", LMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("EFF", EFFMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEREW", GATEREWMeanings));
-	vppchfsm_.push_back(pair<const char *, pfnsetmeanings>("GATEPUN", GATEPUNMeanings)); */
 }
 
 DYNAMIC_LIBRARY_ENTRY_POINT void ProcessTact(unsigned CurrentTact, const INetworkConfigurator &inc)
