@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Network>
+  <Global>0.787686</Global>
+  <!--NOT USED-->
+  <Receptors name="DVS" N="1200">
+    <Implementation lib="LightSpotEnvironment"></Implementation>
+  </Receptors>
+  <Receptors name="Punishment" N="1">
+    <Implementation lib="LightSpotEnvironment"></Implementation>
+  </Receptors>
+  <Receptors name="Reward" N="1">
+    <Implementation lib="LightSpotEnvironment"></Implementation>
+  </Receptors>
+  <Receptors name="Poisson" N="$(NNEU)">
+    <Implementation lib="fromFile">
+      <args>
+        <Noise>$(NOISE)</Noise>
+      </args>
+    </Implementation>
+  </Receptors>
+  <Sections>
+    <Implementation lib="LightSpot">
+      <args>
+        <LinkINP>
+          <!--From DVS to L-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <MAXWEIGHT>$(MAXINPUTWEIGHT)</MAXWEIGHT>
+          <INIWEIGHT Type="DIS">
+            <default>$(INIINPUTRESOURCE)</default>
+          </INIWEIGHT>
+          <probability>$(INPUTPROBABILITY)</probability>
+        </LinkINP>
+        <LinkINPGATE policy="all-to-all" type="inhibitory">
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>$(INPGATEWEIGHT)</WEIGHT>
+        </LinkINPGATE>
+        <LinkGATE policy="all-to-all">
+          <!--From Reward/Punishment to ACTGATE-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+          <FIXED></FIXED>
+        </LinkGATE>
+        <LinkPoisson policy="one-to-one">
+          <!--From Poisson to SENSORYGATE-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+          <FIXED></FIXED>
+        </LinkPoisson>
+        <LinkLL>
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>100</WEIGHT>
+        </LinkLL>
+        <Sections>
+          <Section name="-L">
+            <props>
+              <N>$(NNEU)</N>  <!--4 directions X 10 neurons-->
+              <Structure Type="O" Dimension="4">
+              </Structure>
+              <CHARTIME>$(LCHARTIME)</CHARTIME>
+              <THRESHOLDDECAYPERIOD>$(LTHRESHOLDDECAYPERIOD)</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>$(LTHRESHOLDINC)</THRESHOLDINC>
+              <WEIGHTINC>0</WEIGHTINC>
+              <PLASTICITYTIME>$(PLASTICITYTIME)</PLASTICITYTIME>
+              <MIGRATION>SAME_PLACE</MIGRATION>
+              <!--Inside sub-section!-->
+            </props>
+          </Section>
+          <Section name="-GATEREW">
+            <props>
+              <N>4</N>
+              <!--4 directions-->
+              <Structure Type="O" Dimension="4">
+              </Structure>
+              <CHARTIME>$(GATECHARTIME)</CHARTIME>
+              <THRESHOLDDECAYPERIOD>$(GATETHRESHOLDDECAYPERIOD)</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>$(GATETHRESHOLDINC)</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="-GATEPUN">
+            <props>
+              <N>4</N>
+              <!--4 directions-->
+              <Structure Type="O" Dimension="4">
+              </Structure>
+              <CHARTIME>$(GATECHARTIME)</CHARTIME>
+              <THRESHOLDDECAYPERIOD>$(GATETHRESHOLDDECAYPERIOD)</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>$(GATETHRESHOLDINC)</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="+SENSORYGATE">
+            <props>
+              <N>$(NNEU)</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>$(SENSORYGATECHARTIME)</CHARTIME>
+              <THRESHOLDDECAYPERIOD>1</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>0</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Link from="L" to="GATEREW" type="activating">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>$(ACTIVATIONTIME)</WEIGHT>
+            <probability>1</probability>
+          </Link>
+          <Link from="L" to="GATEPUN" type="activating">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>$(ACTIVATIONTIME)</WEIGHT>
+            <probability>1</probability>
+          </Link>
+          <Link from="GATEREW" to="L" type="reward">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>1</WEIGHT>
+            <probability>1</probability>
+          </Link>
+          <Link from="GATEPUN" to="L" type="reward">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>-$(RELPUNEFFECT)</WEIGHT>
+            <probability>1</probability>
+          </Link>
+          <Link from="SENSORYGATE" to="L" policy="one-to-one">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>10</WEIGHT>
+            <FIXED></FIXED>
+          </Link>
+        </Sections>
+      </args>
+    </Implementation>
+  </Sections>
+  <Readout lib="LightSpotEnvironment">
+    <output>L</output>
+  </Readout>
+</Network>  
