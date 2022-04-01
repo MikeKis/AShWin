@@ -6,9 +6,156 @@ from matplotlib.widgets import Slider
 import numpy as np
 import statistics
 import bisect
+import math
+import os
+import subprocess
+from matplotlib.widgets import Slider
+from ipywidgets import interact, interactive, fixed, interact_manual
+import ipywidgets as widgets
 
-file = "monitoring.3005.csv"
-ReceptorSectionBoundaries = []
+video_file = 'StableWeights.mp4'
+
+id = 2001
+nreceptors = 1200
+ndirections = 4
+nneu = 13
+p = subprocess.Popen(["ArNIResults", "%d" % id])
+p.communicate()
+
+file = R"%d.secint.csv" % id
+sec = []
+CharTime = []
+ThrDecayT = []
+ThresholdExcessIncrementMultiplier = []
+AbsRefT = []
+WINC = []
+RelWDec = []
+Inh = []
+secint = []
+SectionIntensity = namedtuple('SectionIntensity', ['sec', 'tact', 'relfre'])
+secsiz = []
+SectionSize = namedtuple('SectionSize', ['sec', 'tact', 'size'])
+neusec = []
+maxsec = 0
+
+with open(file, "r") as fil:
+    csr = csv.reader(fil)
+    for row in csr:
+        r = float(row[2])
+        if r >= 0:
+            secint.append(SectionIntensity(int(row[1]), int(row[0]), r))
+            maxsec = max(maxsec, secint[-1].sec)        
+        else:
+            secsiz.append(SectionSize(int(row[1]), int(row[0]), -int(row[2])))
+
+plt.figure(1)
+for s in range(maxsec + 1):
+    x = [t.tact for t in secint if t.sec == s]
+    y = [t.relfre for t in secint if t.sec == s]
+    plt.plot(x, y, label = "%d" % (s,), linewidth = 1)
+leg = plt.legend(loc = 'best', ncol = 2, mode = "expand", fancybox = True)
+leg.get_frame().set_alpha(0.5)
+plt.title('Section relative activity')
+
+file = R"%d.stable.csv" % id
+nstable = {}
+ndstable = {}
+tact = [0]
+
+with open(file, "r") as fil:
+    csr = csv.reader(fil)
+    for row in csr:
+        curtact = int(row[0])
+        if curtact != tact[-1]:
+            tact.append(curtact)
+        sec = int(row[1])
+        nstable.setdefault(sec, [0] * (len(tact) - 2))
+        ndstable.setdefault(sec, [0] * (len(tact) - 2))
+        nstable[sec].append(int(row[2]))        
+        ndstable[sec].append(int(row[3]))        
+
+def DrawStableWeights():
+    ax1 = plt.gca()
+    for d in nstable.keys():
+        ax1.plot(tact[1:], nstable[d], label = d, linewidth = 1)
+    ax1.set_xlabel('tact')
+    ax1.set_ylabel('n stable links')
+    leg = plt.legend(loc = 'best', ncol = 2, mode = "expand", shadow = True, fancybox = True)
+    leg.get_frame().set_alpha(0.5)
+
+def DrawStableWeightsDif():
+    ax1 = plt.gca()
+    for d in nstable.keys():
+        ax1.plot(tact[1:], ndstable[d], label = d, linewidth = 1)
+    ax1.set_xlabel('tact')
+    ax1.set_ylabel('stable link diff')
+    leg = plt.legend(loc = 'best', ncol = 2, mode = "expand", shadow = True, fancybox = True)
+    leg.get_frame().set_alpha(0.5)
+
+plt.figure(2)
+DrawStableWeights()
+
+plt.figure(3)
+DrawStableWeightsDif()
+
+file = R"%d.stable_links.csv" % id
+receptor = [[] for i in range(len(tact))]
+neuron = [[] for i in range(len(tact))]
+weights = np.zeros((len(tact), ndirections, nneu, 20, 20, 3))
+weightsind = [{} for i in tact]
+with open(file, "r") as fil:
+    csr = csv.reader(fil)
+    for row in csr:
+        rec = int(row[1])
+        neu = int(row[2])
+        if rec >= 0 and rec < nreceptors:
+            indtact = tact.index(int(row[0]))
+            channel = int(rec / (20 * 20)) 
+            pixelno = rec - channel * 20 * 20
+            picrow = int(pixelno / 20)
+            if  neu < nneu * ndirections:
+                receptor[indtact].append(rec)        
+                neuron[indtact].append(neu)
+                section = int(int(row[2]) / nneu)
+                weights[indtact][section][int(row[2]) - section * nneu][picrow][pixelno - picrow * 20][channel] = 1
+            weightsind[indtact].setdefault(neu, np.zeros((20, 20, 3)))
+            weightsind[indtact][neu][picrow][pixelno - picrow * 20][channel] = 1
+
+fig, ax = plt.subplots(ndirections, nneu, figsize=(42, 10))
+
+def DrawStableWeigtsDVS(tac):
+    indtact = tact.index(tac)
+    for section in range(ndirections):
+        for neuron in range(nneu):
+            ax[section][neuron].axis('off')
+            ax[section][neuron].imshow(weights[indtact][section][neuron])
+
+files = []
+
+def process():
+    j = 1
+    for i in range(tact[1], max(tact) + 1, tact[1]):
+        DrawStableWeigtsDVS(i)
+        fname = "tmp-%04d.png" % j
+        print('Saving frame', fname)
+        plt.savefig(fname)
+        files.append(fname)
+        j += 1
+
+process()
+print('Making movie animation.mpg - this may take a while')
+subprocess.call(['ffmpeg', '-framerate', '8', '-i', 'tmp-%04d.png', '-r', '30', '-pix_fmt', 'yuv420p', video_file])
+
+for fname in files:
+    os.remove(fname)
+
+os.system(video_file)
+
+plt.show()
+
+
+file = "monitoring.2001.csv"
+ReceptorSectionBoundaries = [1200, 1201, 1202]
 
 sec = []
 CharTime = []
@@ -71,7 +218,7 @@ with open(file, newline = '') as fil:
         elif row[0] == "neu":
             neu.append(Neuron(float(row[1]), int(row[2]), row[12]))
 
-indLsection = 1
+indLsection = 0
 
 Lneu = [n for n in range(len(neusec[0])) if neusec[0][n] == indLsection]
 
