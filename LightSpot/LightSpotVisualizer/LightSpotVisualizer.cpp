@@ -4,7 +4,10 @@
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+
+#ifndef FOR_LINUX
 #include <SFML/Graphics.hpp>
+#endif
 
 #include "../environment/LightSpotEnvironment.h"
 
@@ -69,6 +72,7 @@ inline float rPixelY(float rPhysical) {return (1.F - rPhysical) * EXACT_RASTER_S
 
 int main(int ARGC, char *ARGV[])
 {
+#ifndef FOR_LINUX
 	bool bDestroyOldState = ARGC == 2;
 	cout << "Waiting for LightSpot data availability...\n";
 	EnvironmentState es(bDestroyOldState);
@@ -113,4 +117,9 @@ int main(int ARGC, char *ARGV[])
 		window.display();
 	}
 	return EXIT_SUCCESS;
+#else
+	EnvironmentState es(true);
+	cout << "All resident LightSpot data are destroyed\n";
+	return 0;
+#endif
 }
