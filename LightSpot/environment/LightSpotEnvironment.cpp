@@ -53,8 +53,6 @@ const int TargetReachedSpikePeriod = 6;
 
 const double dDistanceChangeThreshold = 0.1;
 
-const int NNeuronsperDirection = 13;
-
 class RandomNumberGenerator
 {
 	uniform_real_distribution<> urd;
@@ -410,7 +408,9 @@ LIGHTSPOTENVIRONMENT_EXPORT IReceptors *LoadStatus(Serializer &ser)
     }
 }
 
-LIGHTSPOTENVIRONMENT_EXPORT void SetParametersOut(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn) {}
+unsigned NNeuronsperDirection;
+
+LIGHTSPOTENVIRONMENT_EXPORT void SetParametersOut(int ExperimentId, size_t tactTermination, unsigned nOutputNeurons, const pugi::xml_node &xn) {NNeuronsperDirection = nOutputNeurons / 4;}
 
 LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing, int nEquilibriumPeriods)
 {
