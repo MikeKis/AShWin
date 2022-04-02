@@ -80,7 +80,7 @@
               <!--Inside sub-section!-->
             </props>
           </Section>
-          <Section name="-GATEREW">
+          <Section name="+GATEREW">
             <props>
               <N>4</N>
               <!--4 directions-->
@@ -92,7 +92,7 @@
               <MIGRATION>NONE</MIGRATION>
             </props>
           </Section>
-          <Section name="-GATEPUN">
+          <Section name="+GATEPUN">
             <props>
               <N>4</N>
               <!--4 directions-->
