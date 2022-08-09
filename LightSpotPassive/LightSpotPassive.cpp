@@ -12,18 +12,20 @@ Emulates signal from videocamera looking at a moving light spot.
 #include <random>
 #include <fstream>
 
+#include <sg/sg.h>
+
 #include "../AShWinCommon.h"
 
 #include "LightSpotPassive.h"
 
+const double dPixelSize = 0.01F;
 
-#define SPOT_HALFSIZE_PIXEL 30
-const unsigned ExactRasterSize = 100;
-const double dPixelSize =  1. / ExactRasterSize;
-const double dSpotSize = 0.01;
-const unsigned CameraPixelSize_pixels = ExactRasterSize / CAMERA_SIZE;
-const double dSpotHalfsize = SPOT_HALFSIZE_PIXEL * dPixelSize;
-const double dlogIntensitySensitivityThreshold = pow(dSpotHalfsize / dSpotSize, 2) * -0.5;
+const int ntactCalibration = 100000;
+const int nSpatialZones = 10;
+const int nVelocityZones = 5;
+const int MinInterspikeInterval = 3;
+const int MaxInterspikeInterval = 5;
+const int nInputNodes = nSpatialZones * nSpatialZones * nVelocityZones * nVelocityZones;
 
 const unsigned minSpotPassageTime_ms = 100;
 const unsigned maxSpotPassageTime_ms = 300;
@@ -40,121 +42,127 @@ public:
     template<class T> T operator()(T max){return (T)((*this)() * max);}
 };
 
-float SpotRaster[2 * SPOT_HALFSIZE_PIXEL][2 * SPOT_HALFSIZE_PIXEL];
-pair<float,float> prr_CameraCenter(-1.F, -1.F);
-pair<float,float> prr_SpotCenter(-1.F, -1.F);
-pair<float,float> prr_SpotSpeed;
-pair<int,int> p_SpotUpperLeftCornerRelativetoCamera_pixels(0x7fffffff, 0x7fffffff);
-
-RandomNumberGenerator rng;
-
-LIGHTSPOTPASSIVE_EXPORT void SetParameters()
+class DYNAMIC_LIBRARY_EXPORTED_CLASS LightSpot: public IReceptors
 {
-	int x, y;
-    FOR_(x, 2 * SPOT_HALFSIZE_PIXEL)
-        FOR_(y, 2 * SPOT_HALFSIZE_PIXEL) {
-            double d2 = (x + 0.5 - SPOT_HALFSIZE_PIXEL) * (x + 0.5 - SPOT_HALFSIZE_PIXEL) + (y + 0.5 - SPOT_HALFSIZE_PIXEL) * (y + 0.5 - SPOT_HALFSIZE_PIXEL);
-            SpotRaster[x][y] = (float)exp(-d2 * dPixelSize * dPixelSize/ (2 * dSpotSize * dSpotSize));
+	RandomNumberGenerator  rng;
+	pair<float, float>     prr_SpotCenter;
+	pair<float, float>     prr_SpotSpeed;
+	vector<vector<float> > vvr_ZoneBoundaries;
+	vector<float>          vr_PhaseSpacePoint;
+
+	float rMakeSpotVelocity(void)
+	{
+		int i1, i2;
+		do {
+			i1 = minSpotPassageTime_ms + rng(maxSpotPassageTime_ms - minSpotPassageTime_ms);
+			i2 = rng(maxSpotPassageTime_ms);
+		} while (i2 > i1);
+		return(1.F / i1);
+	}
+
+	void GenerateSignals(vector<float> &vr_PhaseSpacePoint)
+	{
+		if (prr_SpotCenter.first == -1) {
+			prr_SpotCenter.first = (float)(-0.5 + rng());
+			prr_SpotCenter.second = (float)(-0.5 + rng());
+			float rSpotVelocity = rMakeSpotVelocity();
+			float rSpotMovementDirection = (float)rng(2 * M_PI);
+			prr_SpotSpeed.first = rSpotVelocity * sin(rSpotMovementDirection);
+			prr_SpotSpeed.second = rSpotVelocity * cos(rSpotMovementDirection);
 		}
+
+		vr_PhaseSpacePoint[0] = prr_SpotCenter.first;
+		vr_PhaseSpacePoint[1] = prr_SpotCenter.second;
+		vr_PhaseSpacePoint[2] = prr_SpotSpeed.first;
+		vr_PhaseSpacePoint[3] = prr_SpotSpeed.second;
+
+		prr_SpotCenter.first += prr_SpotSpeed.first;
+		if (prr_SpotCenter.first < -1.) {
+			prr_SpotCenter.first = (float)(-1. + dPixelSize / 2);
+			float rVelocity = rMakeSpotVelocity();
+			auto rMovementDirection = rng(M_PI);
+			prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
+			prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
+		}
+		if (prr_SpotCenter.first >= 1.) {
+			prr_SpotCenter.first = (float)(1. - dPixelSize / 2);
+			float rVelocity = rMakeSpotVelocity();
+			auto rMovementDirection = M_PI + rng(M_PI);
+			prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
+			prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
+		}
+		prr_SpotCenter.second += prr_SpotSpeed.second;
+		if (prr_SpotCenter.second < -1.) {
+			prr_SpotCenter.second = (float)(-1. + dPixelSize / 2);
+			float rVelocity = rMakeSpotVelocity();
+			auto rMovementDirection = rng(M_PI) - M_PI / 2;
+			prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
+			prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
+		}
+		if (prr_SpotCenter.second >= 1.) {
+			prr_SpotCenter.second = (float)(1. - dPixelSize / 2);
+			float rVelocity = rMakeSpotVelocity();
+			auto rMovementDirection = M_PI / 2 + rng(M_PI);
+			prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
+			prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
+		}
+	}
+
+public:
+	LightSpot(): prr_SpotCenter(-1.F, -1.F), vvr_ZoneBoundaries(4), vr_PhaseSpacePoint(4)
+	{
+		vector<vector<float> > vvr_(4);
+		for (int i = 0; i < ntactCalibration; ++i) {
+			GenerateSignals(vr_PhaseSpacePoint);
+			for (size_t j = 0; j < vvr_.size(); ++j)
+				vvr_[j].push_back(vr_PhaseSpacePoint[j]);
+		}
+		sort(vvr_[0].begin(), vvr_[0].end());
+		vvr_ZoneBoundaries[0].resize(nSpatialZones - 1);
+		for (int i = 1; i < nSpatialZones; ++i)
+			vvr_ZoneBoundaries[0][i - 1] = vvr_[0][i * ntactCalibration / nSpatialZones];
+		sort(vvr_[1].begin(), vvr_[1].end());
+		vvr_ZoneBoundaries[1].resize(nSpatialZones - 1);
+		for (int i = 1; i < nSpatialZones; ++i)
+			vvr_ZoneBoundaries[1][i - 1] = vvr_[1][i * ntactCalibration / nSpatialZones];
+		sort(vvr_[2].begin(), vvr_[2].end());
+		vvr_ZoneBoundaries[2].resize(nVelocityZones - 1);
+		for (int i = 1; i < nVelocityZones; ++i)
+			vvr_ZoneBoundaries[2][i - 1] = vvr_[2][i * ntactCalibration / nVelocityZones];
+		sort(vvr_[3].begin(), vvr_[3].end());
+		vvr_ZoneBoundaries[3].resize(nVelocityZones - 1);
+		for (int i = 1; i < nVelocityZones; ++i)
+			vvr_ZoneBoundaries[3][i - 1] = vvr_[3][i * ntactCalibration / nVelocityZones];
+	}
+	virtual bool bGenerateReceptorSignals(char *prec, size_t neuronstrsize) override
+	{
+		vector<size_t> vind_(4);
+		GenerateSignals(vr_PhaseSpacePoint);
+		static int counter = 1;
+		if (!--counter) {
+			for (int k = 0; k < nInputNodes; ++k)
+				*(prec + k * neuronstrsize) = false;
+			counter = MinInterspikeInterval + rng(MaxInterspikeInterval - MinInterspikeInterval + 1);
+		} else {
+			for (size_t j = 0; j < vind_.size(); ++j)
+				vind_[j] = lower_bound(vvr_ZoneBoundaries[j].begin(), vvr_ZoneBoundaries[j].end(), vr_PhaseSpacePoint[j]) - vvr_ZoneBoundaries[j].begin();
+			size_t indInput = vind_[0] + vind_[1] * nSpatialZones + vind_[2] * nSpatialZones * nSpatialZones + vind_[3] * nSpatialZones * nSpatialZones * nVelocityZones;
+			for (int k = 0; k < nInputNodes; ++k)
+				*(prec + k * neuronstrsize) = k == indInput;
+		}
+		return true;
+	}
+	virtual void Randomize(void) override {}
+	virtual void SaveStatus(Serializer &ser) const override {}
+	virtual ~LightSpot() = default;
+};
+
+DYNAMIC_LIBRARY_ENTRY_POINT IReceptors *SetParametersIn(int &nReceptors, const pugi::xml_node &xn) 
+{ 
+	nReceptors = nInputNodes;
+	return new LightSpot;
 }
 
-float rMakeSpotVelocity(void)
-{
-	int i1, i2;
-	do {
-        i1 = minSpotPassageTime_ms + rng(maxSpotPassageTime_ms - minSpotPassageTime_ms);
-        i2 = rng(maxSpotPassageTime_ms);
-	} while (i2 > i1);
-    return(1.F / i1);
-}
-
-LIGHTSPOTPASSIVE_EXPORT void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_PhaseSpacePoint)
-{
-    static vector<vector<unsigned char> > vvuc_Last(CAMERA_SIZE, vector<unsigned char>(CAMERA_SIZE));
-	int x, y;
-	if (prr_CameraCenter.first == -1) {
-		prr_CameraCenter.first = (float)(-0.5 + rng());
-		prr_CameraCenter.second = (float)(-0.5 + rng());
-        prr_SpotCenter.first = (float)(-0.5 + rng());
-        prr_SpotCenter.second = (float)(-0.5 + rng());
-        float rSpotVelocity = rMakeSpotVelocity();
-        float rSpotMovementDirection = (float)rng(2 * M_PI);
-        prr_SpotSpeed.first = rSpotVelocity * sin(rSpotMovementDirection);
-        prr_SpotSpeed.second = rSpotVelocity * cos(rSpotMovementDirection);
-	}
-
-    // мы сохраняем координаты и скорость светового пятна в координатах неподвижной камеры
-
-    vr_PhaseSpacePoint[0] = prr_SpotCenter.first - prr_CameraCenter.first;
-    vr_PhaseSpacePoint[1] = prr_SpotCenter.second - prr_CameraCenter.second;
-    vr_PhaseSpacePoint[2] = prr_SpotSpeed.first;
-    vr_PhaseSpacePoint[3] = prr_SpotSpeed.second;
-
-    // Это координаты верхнего левого угла картинки пятна относительно верхнего правого угла камеры. Учитываем, что пихельная Y-координата идет против метрической координаты (сверху вниз)!
-
-    pair<int,int> p_NewSpotUpperLeftCornerRelativetoCamera_pixels(
-                                                                  (int)((prr_SpotCenter.first - dSpotHalfsize - (prr_CameraCenter.first - 0.5)) / dPixelSize),
-                                                                  (int)((prr_CameraCenter.second + 0.5 - (prr_SpotCenter.second + dSpotHalfsize)) / dPixelSize)
-                                                                 );
-
-    if (p_NewSpotUpperLeftCornerRelativetoCamera_pixels != p_SpotUpperLeftCornerRelativetoCamera_pixels) {
-        p_SpotUpperLeftCornerRelativetoCamera_pixels = p_NewSpotUpperLeftCornerRelativetoCamera_pixels;
-        FOR_(y, CAMERA_SIZE)
-            FOR_(x, CAMERA_SIZE) {
-				double d = 0.;
-				int x1, y1;
-                pair<int,int> p_CameraPixelUpperLeftCorner(x * CameraPixelSize_pixels, y * CameraPixelSize_pixels);
-                FOR_(y1, CameraPixelSize_pixels) {
-                    int iy = p_CameraPixelUpperLeftCorner.second + y1;
-                    int yinSpot = iy - p_NewSpotUpperLeftCornerRelativetoCamera_pixels.second;
-                    if (yinSpot >= 0 && yinSpot < 2 * SPOT_HALFSIZE_PIXEL)
-                        FOR_(x1, CameraPixelSize_pixels) {
-                            int ix = p_CameraPixelUpperLeftCorner.first + x1;
-                            int xinSpot = ix - p_NewSpotUpperLeftCornerRelativetoCamera_pixels.first;
-                            if (xinSpot >= 0 && xinSpot < 2 * SPOT_HALFSIZE_PIXEL && yinSpot >= 0 && yinSpot < 2 * SPOT_HALFSIZE_PIXEL) {
-                                auto d1 = SpotRaster[yinSpot][xinSpot];
-                                d += d1;
-                            }
-                        }
-                }
-                if (d) {
-                    d /= CameraPixelSize_pixels * CameraPixelSize_pixels;
-                    auto d2 = log(d);
-                    vvuc_Last[y][x] = d2 < dlogIntensitySensitivityThreshold ? 0 : (unsigned char)((dlogIntensitySensitivityThreshold - d2) / dlogIntensitySensitivityThreshold * 255);
-                } else vvuc_Last[y][x] = 0;
-			}
-	}
-    vvuc_ = vvuc_Last;
-    prr_SpotCenter.first += prr_SpotSpeed.first;
-    if (prr_SpotCenter.first < -1.) {
-        prr_SpotCenter.first = (float)(-1. + dPixelSize / 2);
-        float rVelocity = rMakeSpotVelocity();
-        auto rMovementDirection = rng(M_PI);
-        prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
-        prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
-	}
-    if (prr_SpotCenter.first >= 1.) {
-        prr_SpotCenter.first = (float)(1. - dPixelSize / 2);
-        float rVelocity = rMakeSpotVelocity();
-		auto rMovementDirection = M_PI + rng(M_PI);
-        prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
-        prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
-	}
-    prr_SpotCenter.second += prr_SpotSpeed.second;
-    if (prr_SpotCenter.second < -1.) {
-        prr_SpotCenter.second = (float)(-1. + dPixelSize / 2);
-        float rVelocity = rMakeSpotVelocity();
-		auto rMovementDirection = rng(M_PI) - M_PI / 2;
-        prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
-        prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
-	}
-    if (prr_SpotCenter.second >= 1.) {
-        prr_SpotCenter.second = (float)(1. - dPixelSize / 2);
-        float rVelocity = rMakeSpotVelocity();
-		auto rMovementDirection = M_PI / 2 + rng(M_PI);
-        prr_SpotSpeed.first = (float)(rVelocity * sin(rMovementDirection));
-        prr_SpotSpeed.second = (float)(rVelocity * cos(rMovementDirection));
-	}
-}
+DYNAMIC_LIBRARY_ENTRY_POINT IReceptors *LoadStatus(Serializer &ser){return new LightSpot;}
 
 

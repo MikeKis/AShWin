@@ -15,10 +15,10 @@ import ipywidgets as widgets
 
 video_file = 'StableWeights.mp4'
 
-id = 2001
+id = 2002
 nreceptors = 1200
 ndirections = 4
-nneu = 13
+nneu = 10
 p = subprocess.Popen(["ArNIResults", "%d" % id])
 p.communicate()
 
