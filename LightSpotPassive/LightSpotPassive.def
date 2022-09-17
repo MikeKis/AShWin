@@ -1,0 +1,5 @@
+LIBRARY	"LightSpotPassive"
+EXPORTS
+SetParametersIn=?SetParametersIn@@YAPEAVIReceptors@@AEAHAEBVxml_node@pugi@@@Z
+LoadStatus=?LoadStatus@@YAPEAVIReceptors@@AEAVSerializer@@@Z
+ 
