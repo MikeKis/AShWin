@@ -7,13 +7,6 @@ Emulates signal from videocamera looking at a moving light spot.
 
 */
 
-#include <utility>
-#include <math.h>
-#include <random>
-#include <fstream>
-
-#include <sg/sg.h>
-
 #include "../AShWinCommon.h"
 
 #include "LightSpotPassive.h"

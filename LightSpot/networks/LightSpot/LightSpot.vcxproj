@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;NO_BOOST;NDEBUG;LIGHTSPOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>e:\ArNI</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>e:\ArNI;c:\E\ArNI</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
     </ClCompile>

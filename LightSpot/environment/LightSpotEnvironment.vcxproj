@@ -94,14 +94,14 @@
       <PreprocessorDefinitions>NDEBUG;LIGHTSPOTENVIRONMENT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
-      <AdditionalIncludeDirectories>e:\boost;e:\ArNI</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>e:\boost;e:\ArNI;c:\E\ArNI;c:\E\boost</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>e:\boost\lib64-msvc-14.1</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>e:\boost\lib64-msvc-14.1;c:\E\boost\lib64-msvc-14.1</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>LightSpotEnvironment.def</ModuleDefinitionFile>
       <GenerateMapFile>true</GenerateMapFile>
     </Link>
