@@ -69,6 +69,11 @@ if(MSVC)
         /OPT:ICF;
         /INCREMENTAL:NO
     )
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE
+            -fpermissive
+            )
+endif()
 endif()
 # Link with other targets.
 target_link_libraries(${PROJECT_NAME} PUBLIC
