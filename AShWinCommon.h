@@ -36,7 +36,7 @@ inline int atoi_s(const char *pch)
     return ret;
 }
 
-inline std::string str(int i) {
+inline std::string tostr(int i) {
 	char buf[30];
 #ifndef FOR_LINUX
 	sprintf_s(buf, sizeof(buf), "%d", i);
