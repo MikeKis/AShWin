@@ -2,6 +2,8 @@
 #include <string>
 #include <iostream>
 
+#define DYNAMIC_LIBRARY_EXPORTED_CLASS
+
 #include "../../LightSpotPassive/LightSpotPassive.h"
 #include "../../DVSEmulator/dvsemulator.h"
 

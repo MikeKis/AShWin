@@ -15,6 +15,8 @@
 #endif
 #endif
 
+#define _USE_MATH_DEFINES
+
 #include <vector>
 #include <utility>
 #include <math.h>

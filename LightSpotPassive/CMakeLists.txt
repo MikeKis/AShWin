@@ -73,6 +73,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         boost_thread
         )
 
-add_subdirectory(LightSpotPassiveRecord)
+#add_subdirectory(LightSpotPassiveRecord)
 add_subdirectory(LightSpotPassiveClustering) 
 add_subdirectory(for_arxiv) 
