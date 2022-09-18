@@ -20,6 +20,7 @@
 #include <math.h>
 #include <random>
 #include <fstream>
+#include <algorithm>
 
 #include <sg/sg.h>
 
