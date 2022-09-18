@@ -1,32 +1,32 @@
-cmake_minimum_required(VERSION 3.15)
-project(LightSpotPassive CXX)
+project(for_arxiv CXX)
 
 ################################################################################
 # Source groups
 ################################################################################
-set(Source_Files
-    "LightSpotPassive.cpp"
-    "LightSpotPassive.h"
+set(SRC
+    "for_arxiv.cpp"
 )
-source_group("Source Files" FILES ${Source_Files})
+source_group("Исходные файлы" FILES ${SRC})
 
 set(ALL_FILES
-    ${Source_Files}
+    ${SRC}
 )
 
 ################################################################################
 # Target
 ################################################################################
-add_library(${PROJECT_NAME} SHARED ${ALL_FILES})
+add_executable(${PROJECT_NAME} ${ALL_FILES})
 
-set(ROOT_NAMESPACE LightSpotPassive)
+set(ROOT_NAMESPACE for_arxiv)
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    VS_GLOBAL_KEYWORD "Win32Proj"
+)
 ################################################################################
 # Output directory
 ################################################################################
 set_target_properties(${PROJECT_NAME} PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY    "${CMAKE_CURRENT_SOURCE_DIR}/../Workplace"
-        PREFIX ""
+RUNTIME_OUTPUT_DIRECTORY    "${CMAKE_CURRENT_SOURCE_DIR}/../../Workplace"
 )
 
 ################################################################################
@@ -34,9 +34,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 ################################################################################
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     "FOR_LINUX;"
+    "_CRT_SECURE_NO_WARNINGS;"
     "NDEBUG;"
-    "_USRDLL;"
-    "LIGHTSPOTPASSIVE_EXPORTS"
+    "_CONSOLE;"
+    "UNICODE;"
+    "_UNICODE"
 )
 
 ################################################################################
@@ -44,8 +46,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 ################################################################################
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
-        /Od;
+        /permissive-;
+        /O2;
         /Oi;
+        /sdl;
         ${DEFAULT_CXX_RUNTIME_LIBRARY};
         /Gy;
         /W3;
@@ -60,19 +64,15 @@ if(MSVC)
         /NODEFAULTLIB:libboost_date_time-vc140-mt-1_64.lib;
         /NODEFAULTLIB:libboost_thread-vc140-mt-1_64.lib;
         /DEBUG;
-        /SUBSYSTEM:WINDOWS;
+        /SUBSYSTEM:CONSOLE;
         /OPT:REF;
         /OPT:ICF;
         /INCREMENTAL:NO
     )
 endif()
-
+# Link with other targets.
 target_link_libraries(${PROJECT_NAME} PUBLIC
         boost_system
-        boost_filesystem
-        boost_thread
+    	pthread
         )
 
-add_subdirectory(LightSpotPassiveRecord)
-add_subdirectory(LightSpotPassiveClustering) 
-add_subdirectory(for_arxiv) 
