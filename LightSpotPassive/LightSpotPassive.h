@@ -2,6 +2,7 @@
 #define LIGHTSPOTPASSIVE_H
 
 #ifdef FOR_LINUX
+#include <cstring>
 #if defined(LIGHTSPOTPASSIVE_LIBRARY)
 #define LIGHTSPOTPASSIVE_EXPORT
 #else
