@@ -104,15 +104,15 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto xncopy = xn;
 	auto Sections = xncopy.child("Sections");
 	auto INPLink = xncopy.child("LinkINP");
-	auto pilpINPLink = inc.pilpCreateProjection(INPLink, IntersectionLinkProperties::connection_excitatory);
+	auto pilpINPLink = inc.pilpCreateProjection(IntersectionLinkProperties::connection_excitatory, &INPLink);
 	auto INPGATELink = xncopy.child("LinkINPGATE");
-	auto pilpINPGATELink = inc.pilpCreateProjection(INPGATELink, IntersectionLinkProperties::connection_excitatory);
+	auto pilpINPGATELink = inc.pilpCreateProjection(IntersectionLinkProperties::connection_excitatory, &INPGATELink);
 	auto GATELink = xncopy.child("LinkGATE");
-	auto pilpGATELink = inc.pilpCreateProjection(GATELink, IntersectionLinkProperties::connection_excitatory);
+	auto pilpGATELink = inc.pilpCreateProjection(IntersectionLinkProperties::connection_excitatory, &GATELink);
 	auto PoissonLink = xncopy.child("LinkPoisson");
-	auto pilpPoissonLink = inc.pilpCreateProjection(PoissonLink, IntersectionLinkProperties::connection_excitatory);
+	auto pilpPoissonLink = inc.pilpCreateProjection(IntersectionLinkProperties::connection_excitatory, &PoissonLink);
 	auto LLLink = xncopy.child("LinkLL");
-	pilpLLLink = inc.pilpCreateProjection(LLLink, IntersectionLinkProperties::connection_inhibitory);
+	pilpLLLink = inc.pilpCreateProjection(IntersectionLinkProperties::connection_inhibitory, &LLLink);
 	inc.bAddNetwork(Sections);
 	inc.bConnectPopulations("DVS", "L", pilpINPLink);
 	inc.DestroyProjection(pilpINPLink);
@@ -125,7 +125,6 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	inc.bConnectPopulations("Poisson", "SENSORYGATE", pilpPoissonLink);
 	inc.DestroyProjection(pilpGATELink);
 	inc.DestroyProjection(pilpPoissonLink);
-	inc.Finalize();
 }
 
 DYNAMIC_LIBRARY_ENTRY_POINT void SetMeaningDefinitions(vector<pair<const char *, pfnsetmeanings> > &vppchfsm_)
