@@ -22,6 +22,7 @@
 #include <math.h>
 #include <random>
 #include <fstream>
+#include <chrono>
 
 #include <sg/sg.h>
 
@@ -37,7 +38,22 @@ class RandomNumberGenerator
 public:
 	RandomNumberGenerator(): urd(0., 1.) {}
 	double operator()() { return urd(mt); }
-	template<class T> T operator()(T max) { return (T)((*this)() * max); }
+	template<class T> T operator()(T max) {return (T)((*this)() * max);}
+	void Randomize()
+	{
+		unsigned char buf[30];
+		int i;
+		time_t tim = time(NULL);
+		char *pch = ctime(&tim);
+		strncpy((char *)buf, pch + 2, 8);
+		strncpy((char *)(buf + 8), pch + 11, 8);
+		*((int *)(buf + 16)) = clock();
+		unsigned a = (unsigned)this;
+		for (i = 0; i < sizeof(buf) / sizeof(a); i++)
+			*((unsigned *)buf + i) ^= a;
+
+		mt.seed(a);
+	}
 };
 
 const unsigned minSpotPassageTime_ms = 100;
@@ -112,7 +128,7 @@ public:
 		}
 		return true;
 	}
-	virtual void Randomize(void) override {}
+	virtual void Randomize(void) override {rng.Randomize();}
 	virtual void SaveStatus(Serializer &ser) const override {}
 	virtual ~LightSpot() = default;
 	size_t indGetCurrentState() const
