@@ -25,7 +25,7 @@ set(ROOT_NAMESPACE LightSpotPassive)
 # Output directory
 ################################################################################
 set_target_properties(${PROJECT_NAME} PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY    "${CMAKE_CURRENT_SOURCE_DIR}/../Workplace"
+        LIBRARY_OUTPUT_DIRECTORY    "${CMAKE_CURRENT_SOURCE_DIR}/../Experiments"
         PREFIX ""
 )
 

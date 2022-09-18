@@ -22,7 +22,8 @@
 #include <math.h>
 #include <random>
 #include <fstream>
-#include <chrono>
+#include <algorithm>
+#include <time.h>
 
 #include <sg/sg.h>
 
