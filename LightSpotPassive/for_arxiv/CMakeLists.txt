@@ -74,7 +74,6 @@ else()
             -fpermissive
             )
 endif()
-endif()
 # Link with other targets.
 target_link_libraries(${PROJECT_NAME} PUBLIC
         boost_system
