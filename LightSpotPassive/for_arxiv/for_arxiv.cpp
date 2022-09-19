@@ -17,7 +17,7 @@
 
 const size_t EtalonHistoryLength = 100000000;
 const size_t TestHistoryLength = 1000000;
-const unsigned SamplingPeriod = 7;
+const unsigned SamplingPeriod = 30;
 const unsigned nTests = 30;
 
 const int nStates = 2500;
@@ -130,14 +130,9 @@ int main(int ARGC, char *ARGV[])
 	vector<fs::path> vpat_;
 	string strpath("." FOLDER_SEPARATOR);
 
-	set<state_transition> sstd_TestedTransitions, sstd_AdditionalTransitionsfromSNN;
-
 	vector<size_t> vn_Etalon;
 	vector<vector<size_t> > vvn_theor;
 	vector<vector<double> > vvd_exp;
-
-	int m;
-	set<state_transition>::const_iterator n;
 
 	vector<double> vd_theorSpearman, vd_expSpearman;
 
@@ -201,68 +196,42 @@ int main(int ARGC, char *ARGV[])
 					mstn_Etalon.insert(pstn_);
 				}
 
+				for (const auto &j: mstn_Etalon)
+					vmindn_EtalonTransitions_to[j.first.second][j.first.first] = j.second;
+
 				vpat_ = vector<fs::path>(fs::recursive_directory_iterator(fs::path((strpath + ARGV[1]).c_str())), fs::recursive_directory_iterator());
 
 				for (const auto &path: vpat_) 
 					if (!fs::is_directory(path)) {
 						ifstream ifsexp(path.c_str());
+						vector<map<size_t, double> > vmindd_(nStates);
 						while (getline(ifsexp, str).good()) {
-							vmstd_exp.push_back(map<state_transition, double>());
 							stringstream ss(str);
-							pair<state_transition, double> pstd_;
-							ss >> pstd_.first.first >> ch >> pstd_.first.second >> ch >> pstd_.second;
-							vmstd_exp.back().insert(pstd_);
+							size_t fromState, toState;
+							double dW;
+							ss >> toState >> ch >> fromState >> ch >> dW;
+							vmindd_[toState][fromState] = dW;
+						}
+						FORI(nStates) {
+							set<size_t> sind_fromStates;
+							vector<size_t> vn_Etalon;
+							vector<double> vd_;
+							for (const auto &p: vmindn_EtalonTransitions_to[_i])
+								if (p.second)
+									sind_fromStates.insert(p.first);
+							for (const auto &v: vmindd_[_i])
+								sind_fromStates.insert(v.first);
+							for (auto q: sind_fromStates) {
+								vn_Etalon.push_back(vmindn_EtalonTransitions_to[_i][q]);
+								vd_.push_back(vmindd_[_i][q]);
+							}
+							vd_expSpearman.push_back(dSpearman(vn_Etalon, vd_));
 						}
 					}
 
-				for (const auto &i: mstn_Etalon) 
-					if (i.second > 3 && all_of(vmstn_theor.begin(), vmstn_theor.end(), [&](const map<state_transition, size_t> &mstn_)
-																								 {
-																									auto j = mstn_.find(i.first);
-																								 	return j != mstn_.end() && j->second > 3;
-																								 }
-											  ))
-						sstd_TestedTransitions.insert(i.first);
-
-				for (auto &k: vmstd_exp) {
-					double dminW = 1e10;
-					for (const auto &l: sstd_TestedTransitions)
-						if (k[l] < dminW)
-							dminW = k[l];
-					for (const auto &i: k)
-						if (i.second > dminW && sstd_TestedTransitions.find(i.first) == sstd_TestedTransitions.end())
-							sstd_AdditionalTransitionsfromSNN.insert(i.first);
-				}
-
-				sstd_TestedTransitions += sstd_AdditionalTransitionsfromSNN;
-
-				vn_Etalon.resize(sstd_TestedTransitions.size());
-				vvn_theor.resize(vmstn_theor.size(), vector<size_t>(sstd_TestedTransitions.size()));
-				vvd_exp.resize(vmstd_exp.size(), vector<double>(sstd_TestedTransitions.size()));
-
-				m = 0;
-				n = sstd_TestedTransitions.begin();
-				while (n != sstd_TestedTransitions.end()) {
-					vn_Etalon[m] = mstn_Etalon[*n];
-					FORI(vmstn_theor.size())
-						vvn_theor[_i][m] = vmstn_theor[_i][*n];
-					FORI(vmstd_exp.size())
-						vvd_exp[_i][m] = vmstd_exp[_i][*n];
-					++m;
-					++n;
-				}
-
-				vd_theorSpearman.resize(vmstn_theor.size());
-				vd_expSpearman.resize(vmstd_exp.size());
-				FORI(vmstn_theor.size())
-					vd_theorSpearman[_i] = dSpearman(vn_Etalon, vvn_theor[_i]);
-				FORI(vmstd_exp.size())
-					vd_expSpearman[_i] = dSpearman(vn_Etalon, vvd_exp[_i]);
-
-				mean_stddev(vd_theorSpearman, dtheorSpearmanMean, dtheorSpearmanStddev);
 				mean_stddev(vd_expSpearman, dexpSpearmanMean, dexpSpearmanStddev);
 
-				cout << "theor:\tmean\t" << dtheorSpearmanMean << "\tstddev\t" << dtheorSpearmanStddev << "\nexp:\tmean\t" << dexpSpearmanMean << "\tstddev\t" << dexpSpearmanStddev;
+				cout << "exp:\tmean\t" << dexpSpearmanMean << "\tstddev\t" << dexpSpearmanStddev << "\n";
 
 				break;
 
