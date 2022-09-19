@@ -165,7 +165,6 @@ int main(int ARGC, char *ARGV[])
 						FORI(nStates)
 							r[_i] = make_pair(0, _i);
 					for (const auto &j: mstn_) {
-						ofs << o << "," << j.first.first << ',' << j.first.second << ',' << j.second << endl;
 						vvpnind_[j.first.second][j.first.first].first = j.second;
 						vmindn_[j.first.second][j.first.first] = j.second;
 					}
