@@ -90,7 +90,7 @@ template<class STL_CONTAINER, class F> void mean_stddev(const STL_CONTAINER &a, 
 		return;
 	}
 	double dstddev = 0.;
-	for (auto i : a)
+	for (auto i: a)
 		dstddev += (i - dmean) * (i - dmean);
 	dstddev /= a.size() - 1;
 	stddev = (F)sqrt(dstddev);
@@ -123,7 +123,7 @@ int main(int ARGC, char *ARGV[])
 	vector<map<state_transition, size_t> > vmstn_theor;
 	vector<map<state_transition, double> > vmstd_exp;
 	ifstream ifs;
-	map<state_transition, double> mstd_;
+	vector<vector<pair<double, size_t> > > vvpdind_(nStates);
 
 	namespace fs = boost::filesystem;
 
@@ -143,35 +143,63 @@ int main(int ARGC, char *ARGV[])
 
 	double dtheorSpearmanMean, dtheorSpearmanStddev, dexpSpearmanMean, dexpSpearmanStddev;
 
+	vector<map<size_t, size_t> > vmindn_EtalonTransitions_to(nStates);
+
+	unsigned o;
+
 	switch (ARGC) {
 
 		case 1: GetTransitionCounts(ls, EtalonHistoryLength, mstn_Etalon);
 				ofs.open("for_arxiv.csv");
-				for (const auto &j : mstn_Etalon)
-					ofs << "-1," << j.first.first << ',' << j.first.second << ',' << j.second << endl;
-				FORI(nTests) {
-					cout << "test " << _i << endl;
+				for (const auto &j: mstn_Etalon) {
+					ofs << j.first.first << ',' << j.first.second << ',' << j.second << endl;
+					vmindn_EtalonTransitions_to[j.first.second][j.first.first] = j.second;
+				}
+				FOR_(o, nTests) {
+					cout << "test " << o << endl;
 					map<state_transition, size_t> mstn_;
 					GetTransitionCounts(ls, TestHistoryLength, mstn_);
-					for (const auto &j: mstn_)
-						ofs << _i << "," << j.first.first << ',' << j.first.second << ',' << j.second << endl;
+					vector<vector<pair<size_t, size_t> > > vvpnind_(nStates, vector<pair<size_t, size_t> >(nStates));
+					vector<map<size_t, size_t> > vmindn_(nStates);
+					for (auto &r: vvpnind_)
+						FORI(nStates)
+							r[_i] = make_pair(0, _i);
+					for (const auto &j: mstn_) {
+						ofs << o << "," << j.first.first << ',' << j.first.second << ',' << j.second << endl;
+						vvpnind_[j.first.second][j.first.first].first = j.second;
+						vmindn_[j.first.second][j.first.first] = j.second;
+					}
+					FORI(nStates) {
+						set<size_t> sind_fromStates;
+						vector<size_t> vn_Etalon, vn_;
+						stable_sort(vvpnind_[_i].begin(), vvpnind_[_i].end(), greater<pair<size_t, size_t> >());
+						for (const auto &p: vmindn_EtalonTransitions_to[_i])
+							if (p.second)
+								sind_fromStates.insert(p.first);
+						auto s = sind_fromStates.size();
+						for (size_t t = 0; t < s; ++t)
+							sind_fromStates.insert(vvpnind_[_i][t].second);
+						for (auto q: sind_fromStates) {
+							vn_Etalon.push_back(vmindn_EtalonTransitions_to[_i][q]);
+							vn_.push_back(vmindn_[_i][q]);
+						}
+						vd_theorSpearman.push_back(dSpearman(vn_Etalon, vn_));
+					}
 				}
+
+				mean_stddev(vd_theorSpearman, dtheorSpearmanMean, dtheorSpearmanStddev);
+
+				cout << "theor:\tmean\t" << dtheorSpearmanMean << "\tstddev\t" << dtheorSpearmanStddev << "\n";
+
 				break;
 
 		case 2: ifstheor.open("for_arxiv.csv");
 
 				while (getline(ifstheor, str).good()) {
 					stringstream ss(str);
-					int theorrun;
 					pair<state_transition, size_t> pstn_;
-					ss >> theorrun >> ch >> pstn_.first.first >> ch >> pstn_.first.second >> ch >> pstn_.second;
-					if (theorrun == -1)
-						mstn_Etalon.insert(pstn_);
-					else {
-						if (theorrun >= vmstn_theor.size())
-							vmstn_theor.resize(theorrun + 1);
-						vmstn_theor[theorrun].insert(pstn_);
-					}
+					ss >> pstn_.first.first >> ch >> pstn_.first.second >> ch >> pstn_.second;
+					mstn_Etalon.insert(pstn_);
 				}
 
 				vpat_ = vector<fs::path>(fs::recursive_directory_iterator(fs::path((strpath + ARGV[1]).c_str())), fs::recursive_directory_iterator());
@@ -239,7 +267,19 @@ int main(int ARGC, char *ARGV[])
 
 				break;
 
-		case 3: ifs.open(ARGV[1]);
+		case 3: ifstheor.open("for_arxiv.csv");
+
+				while (getline(ifstheor, str).good()) {
+					stringstream ss(str);
+					pair<state_transition, size_t> pstn_;
+					ss >> pstn_.first.first >> ch >> pstn_.first.second >> ch >> pstn_.second;
+					mstn_Etalon.insert(pstn_);
+				}
+
+				for (const auto &j: mstn_Etalon)
+					vmindn_EtalonTransitions_to[j.first.second][j.first.first] = j.second;
+
+				ifs.open(ARGV[1]);
 				while (getline(ifs, str).good()) {
 					if (str.substr(0, 12) == "lin," + tostr(TestHistoryLength) + ",") {
 						stringstream ss(str.substr(12));
@@ -255,14 +295,20 @@ int main(int ARGC, char *ARGV[])
 								ss >> ch >> LinkType >> ch >> r >> ch >> r >> ch >> LinkType >> ch >> LinkType >> ch >> indpreneuron >> ch >> r >> ch >> r >> ch >> dW;
 								int StateTo = (indpostneuron - 2 * nStates) / nASSperColumn;
 								int StateFrom = -1 - indpreneuron - nStates;
-								mstd_[make_pair(StateFrom, StateTo)] = dW;
+								vvpdind_[StateTo].push_back(make_pair(dW, StateFrom));
 							}
 						}
 					}
 				}
+
+				for (auto &u: vvpdind_)
+					stable_sort(u.begin(), u.end(), greater<pair<double, size_t> >());
+
 				ofs.open(ARGV[2]);
-				for (const auto &j : mstd_)
-					ofs << j.first.first << ',' << j.first.second << ',' << j.second << endl;
+				for (size_t t = 0; t < nStates; ++t)
+					FORI(vmindn_EtalonTransitions_to[t].size())
+						ofs << t << ',' << vvpdind_[t][_i].second << ',' << vvpdind_[t][_i].first << endl;
+
 				break;
 
 	}
