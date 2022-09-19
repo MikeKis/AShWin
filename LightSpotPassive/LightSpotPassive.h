@@ -3,12 +3,14 @@
 
 #ifdef FOR_LINUX
 #include <cstring>
+#define FOLDER_SEPARATOR "/"
 #if defined(LIGHTSPOTPASSIVE_LIBRARY)
 #define LIGHTSPOTPASSIVE_EXPORT
 #else
 #define LIGHTSPOTPASSIVE_EXPORT
 #endif
 #else
+#define FOLDER_SEPARATOR "\\"
 #if defined(LIGHTSPOTPASSIVE_LIBRARY)
 #define LIGHTSPOTPASSIVE_EXPORT __declspec(dllexport)
 #else
