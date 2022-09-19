@@ -252,7 +252,7 @@ int main(int ARGC, char *ARGV[])
 								float r;
 								double dW;
 								int indpreneuron;
-								ss >> ch >> LinkType >> ch >> r >> ch >> LinkType >> ch >> LinkType >> ch >> indpreneuron >> ch >> r >> ch >> r >> ch >> dW;
+								ss >> ch >> LinkType >> ch >> r >> ch >> r >> ch >> LinkType >> ch >> LinkType >> ch >> indpreneuron >> ch >> r >> ch >> r >> ch >> dW;
 								int StateTo = (indpostneuron - 2 * nStates) / nASSperColumn;
 								int StateFrom = -1 - indpreneuron - nStates;
 								mstd_[make_pair(StateFrom, StateTo)] = dW;
