@@ -142,6 +142,8 @@ int main(int ARGC, char *ARGV[])
 
 	unsigned o;
 
+	vector<double> vd_Wmin(nStates, 1000000);
+
 	switch (ARGC) {
 
 		case 1: GetTransitionCounts(ls, EtalonHistoryLength, mstn_Etalon);
@@ -154,25 +156,17 @@ int main(int ARGC, char *ARGV[])
 					cout << "test " << o << endl;
 					map<state_transition, size_t> mstn_;
 					GetTransitionCounts(ls, TestHistoryLength, mstn_);
-					vector<vector<pair<size_t, size_t> > > vvpnind_(nStates, vector<pair<size_t, size_t> >(nStates));
 					vector<map<size_t, size_t> > vmindn_(nStates);
-					for (auto &r: vvpnind_)
-						FORI(nStates)
-							r[_i] = make_pair(0, _i);
-					for (const auto &j: mstn_) {
-						vvpnind_[j.first.second][j.first.first].first = j.second;
+					for (const auto &j: mstn_) 
 						vmindn_[j.first.second][j.first.first] = j.second;
-					}
 					FORI(nStates) {
 						set<size_t> sind_fromStates;
 						vector<size_t> vn_Etalon, vn_;
-						stable_sort(vvpnind_[_i].begin(), vvpnind_[_i].end(), greater<pair<size_t, size_t> >());
 						for (const auto &p: vmindn_EtalonTransitions_to[_i])
 							if (p.second)
 								sind_fromStates.insert(p.first);
-						auto s = sind_fromStates.size();
-						for (size_t t = 0; t < s; ++t)
-							sind_fromStates.insert(vvpnind_[_i][t].second);
+						for (const auto &p: vmindn_[_i])
+							sind_fromStates.insert(p.first);
 						for (auto q: sind_fromStates) {
 							vn_Etalon.push_back(vmindn_EtalonTransitions_to[_i][q]);
 							vn_.push_back(vmindn_[_i][q]);
@@ -235,19 +229,7 @@ int main(int ARGC, char *ARGV[])
 
 				break;
 
-		case 3: ifstheor.open("for_arxiv.csv");
-
-				while (getline(ifstheor, str).good()) {
-					stringstream ss(str);
-					pair<state_transition, size_t> pstn_;
-					ss >> pstn_.first.first >> ch >> pstn_.first.second >> ch >> pstn_.second;
-					mstn_Etalon.insert(pstn_);
-				}
-
-				for (const auto &j: mstn_Etalon)
-					vmindn_EtalonTransitions_to[j.first.second][j.first.first] = j.second;
-
-				ifs.open(ARGV[1]);
+		case 3: ifs.open(ARGV[1]);
 				while (getline(ifs, str).good()) {
 					if (str.substr(0, 12) == "lin," + tostr(TestHistoryLength) + ",") {
 						stringstream ss(str.substr(12));
@@ -264,18 +246,18 @@ int main(int ARGC, char *ARGV[])
 								int StateTo = (indpostneuron - 2 * nStates) / nASSperColumn;
 								int StateFrom = -1 - indpreneuron - nStates;
 								vvpdind_[StateTo].push_back(make_pair(dW, StateFrom));
+								if (dW < vd_Wmin[StateTo])
+									vd_Wmin[StateTo] = dW;
 							}
 						}
 					}
 				}
 
-				for (auto &u: vvpdind_)
-					stable_sort(u.begin(), u.end(), greater<pair<double, size_t> >());
-
 				ofs.open(ARGV[2]);
 				for (size_t t = 0; t < nStates; ++t)
-					FORI(vmindn_EtalonTransitions_to[t].size())
-						ofs << t << ',' << vvpdind_[t][_i].second << ',' << vvpdind_[t][_i].first << endl;
+					for(const auto &w: vvpdind_[t])
+						if (w.first != vd_Wmin[t])
+							ofs << t << ',' << w.second << ',' << w.first << endl;
 
 				break;
 
