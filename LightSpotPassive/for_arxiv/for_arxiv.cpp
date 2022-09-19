@@ -142,8 +142,6 @@ int main(int ARGC, char *ARGV[])
 
 	unsigned o;
 
-	vector<double> vd_Wmin(nStates, 1000000);
-
 	switch (ARGC) {
 
 		case 1: GetTransitionCounts(ls, EtalonHistoryLength, mstn_Etalon);
@@ -246,8 +244,6 @@ int main(int ARGC, char *ARGV[])
 								int StateTo = (indpostneuron - 2 * nStates) / nASSperColumn;
 								int StateFrom = -1 - indpreneuron - nStates;
 								vvpdind_[StateTo].push_back(make_pair(dW, StateFrom));
-								if (dW < vd_Wmin[StateTo])
-									vd_Wmin[StateTo] = dW;
 							}
 						}
 					}
@@ -256,7 +252,7 @@ int main(int ARGC, char *ARGV[])
 				ofs.open(ARGV[2]);
 				for (size_t t = 0; t < nStates; ++t)
 					for(const auto &w: vvpdind_[t])
-						if (w.first != vd_Wmin[t])
+						if (w.first > 1.71759)
 							ofs << t << ',' << w.second << ',' << w.first << endl;
 
 				break;
