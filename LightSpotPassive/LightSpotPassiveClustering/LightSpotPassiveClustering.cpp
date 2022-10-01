@@ -21,7 +21,7 @@ size_t StartTime;
 size_t OperationTime = 0xffffffff;
 size_t MeasurementTime = 0xffffffff;
 vector<array<double, 4> > PhaseSpacePoint;
-int ExpId;
+int ExpId = 0;
 vector<array<double, 4> > NeuronCenter;
 vector<size_t> vn_NeuronSpikes;
 int TimeQuant = 30;
@@ -29,18 +29,8 @@ double derr2 = 0.;
 int nGoodQuants = 0;
 
 DYNAMIC_LIBRARY_ENTRY_POINT void SetParametersOut(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn)
+void prepare()
 {
-	auto starttime = xn.child("start_time");
-	StartTime = 0;
-	if (starttime)
-		StartTime = atoi_s(xn.child_value("start_time"));
-	OperationTime = atoi_s(xn.child_value("operation_time"));
-	if (StartTime + OperationTime > tactTermination)
-		OperationTime = tactTermination - StartTime;
-	MeasurementTime = atoi_s(xn.child_value("measurement_time"));
-	if (MeasurementTime >= OperationTime)
-		throw std::runtime_error("invalid settings");
-	TimeQuant = atoi_s(xn.child_value("time_quant"));
 	size_t tact = 0;
 	ifstream ifscsv("passive.csv");
 	string str;
@@ -60,6 +50,35 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParametersOut(int ExperimentId, size_t tactT
 	}
 	if (tact < StartTime + OperationTime)
 		throw std::runtime_error("passive.csv - unexpected eof");
+}
+
+DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(size_t tactTermination, size_t starttime, size_t operation_time, size_t measurement_time, int time_quant)
+{
+	StartTime = starttime;
+	OperationTime = operation_time;
+	if (StartTime + OperationTime > tactTermination)
+		OperationTime = tactTermination - StartTime;
+	MeasurementTime = measurement_time;
+	if (MeasurementTime >= OperationTime)
+		throw std::runtime_error("invalid settings");
+	TimeQuant = time_quant;
+	prepare();
+}
+
+DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn)
+{
+	auto starttime = xn.child("start_time");
+	StartTime = 0;
+	if (starttime)
+		StartTime = atoi_s(xn.child_value("start_time"));
+	OperationTime = atoi_s(xn.child_value("operation_time"));
+	if (StartTime + OperationTime > tactTermination)
+		OperationTime = tactTermination - StartTime;
+	MeasurementTime = atoi_s(xn.child_value("measurement_time"));
+	if (MeasurementTime >= OperationTime)
+		throw std::runtime_error("invalid settings");
+	TimeQuant = atoi_s(xn.child_value("time_quant"));
+	prepare();
 	ExpId = ExperimentId;
 }
 
@@ -123,6 +142,7 @@ DYNAMIC_LIBRARY_ENTRY_POINT bool ObtainOutputSpikes(const vector<int> &v_Firing,
 	++tact;
 	return OperationTime > 0;
 }
+
 DYNAMIC_LIBRARY_ENTRY_POINT int Finalize(int OriginalTerminationCode)
 {
 	if (OriginalTerminationCode < 0 || !OriginalTerminationCode && tact < StartTime + OperationTime)

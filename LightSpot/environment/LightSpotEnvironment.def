@@ -5,3 +5,4 @@ LoadStatus=?LoadStatus@@YAPEAVIReceptors@@AEAVSerializer@@@Z
 SetParametersOut=?SetParametersOut@@YAXH_KAEBVxml_node@pugi@@@Z
 ObtainOutputSpikes=?ObtainOutputSpikes@@YA_NAEBV?$vector@HV?$allocator@H@std@@@std@@H@Z
 Finalize=?Finalize@@YAHH@Z
+Serialize=?Serialize@@YAXAEAVSerializer@@_N@Z

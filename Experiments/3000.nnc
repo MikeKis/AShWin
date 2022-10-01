@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Network>
+  <Global>0.787686</Global>
+  <Receptors name="DVS" N="1200">
+    <Implementation lib="LightSpotEnvironment"></Implementation>
+  </Receptors>
+  <Receptors name="Punishment" N="1">
+    <Implementation lib="LightSpotEnvironment"></Implementation>
+  </Receptors>
+  <Receptors name="Reward" N="1">
+    <Implementation lib="LightSpotEnvironment"></Implementation>
+  </Receptors>
+  <Sections>
+    <Implementation lib="LightSpot">
+      <args>
+        <LinkINP>
+          <!--From DVS to WTA-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <MAXWEIGHT>1</MAXWEIGHT>
+          <INIWEIGHT Type="DIS">
+            <default>0</default>
+            <value v="10" share="0.1"></value>
+          </INIWEIGHT>
+          <probability>0.5</probability>
+        </LinkINP>
+        <LinkGATE policy="all-to-all">
+          <!--From Reward/Punishment to ACTGATE-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+          <FIXED></FIXED>
+        </LinkGATE>
+        <LinkWMEM policy="one-to-one">
+          <!--From Reward/Punishment to ACTGATE-->
+          <DELAY Type="UNI">
+            <min>29</min>
+            <max>29</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+          <FIXED></FIXED>
+        </LinkWMEM>
+        <LinkWMEMinh policy="one-to-one">
+          <!--From Reward/Punishment to ACTGATE-->
+          <DELAY Type="UNI">
+            <min>1</min>
+            <max>1</max>
+          </DELAY>
+          <WEIGHT>10</WEIGHT>
+        </LinkWMEMinh>
+        <Sections>
+          <Section name="-W">
+            <props>
+              <N>100</N>
+              <Structure Type="W">
+              </Structure>
+              <CHARTIME>10</CHARTIME>
+              <WEIGHTINC>1</WEIGHTINC>
+              <RELWEIGHTDEC>0.035741</RELWEIGHTDEC>
+              <THRESHOLDDECAYPERIOD>1</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>0</THRESHOLDINC>
+              <PLASTICITYTIME>14</PLASTICITYTIME>
+              <MIGRATION>INSIDE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="+MEM">
+            <props>
+              <N>100</N>
+              <Structure Type="W">
+              </Structure>
+              <CHARTIME>10</CHARTIME>
+              <MEMORY>30</MEMORY>
+              <!--The rest will be 90 and 270-->
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="+LPLUS">
+            <props>
+              <N>12</N>  <!--4 directions X 3 action powers-->
+              <Structure Type="W">
+              </Structure>
+              <CHARTIME>7</CHARTIME>
+              <THRESHOLDDECAYPERIOD>10</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>20</THRESHOLDINC>
+              <WEIGHTINC>0</WEIGHTINC>
+              <PLASTICITYTIME>50</PLASTICITYTIME>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="+LMINUS">
+            <props>
+              <N>12</N>
+              <!--4 directions X 3 action powers-->
+              <Structure Type="W">
+              </Structure>
+              <CHARTIME>7</CHARTIME>
+              <THRESHOLDDECAYPERIOD>10</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>20</THRESHOLDINC>
+              <WEIGHTINC>0</WEIGHTINC>
+              <PLASTICITYTIME>50</PLASTICITYTIME>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="-ACTBLOCK">
+            <props>
+              <N>12</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>1</CHARTIME>
+              <BURSTING_PERIOD>3</BURSTING_PERIOD>
+              <MEMORY>10</MEMORY>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="+EFF">
+            <props>
+              <N>12</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>1</CHARTIME>
+              <!--It is to guarantee efficient inhibition from ACTBLOCK-->
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="-GATEREW">
+            <props>
+              <N>12</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>10</CHARTIME>
+              <THRESHOLDDECAYPERIOD>100</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>100</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Section name="-GATEPUN">
+            <props>
+              <N>12</N>
+              <!--4 directions X 3 action powers-->
+              <CHARTIME>10</CHARTIME>
+              <THRESHOLDDECAYPERIOD>100</THRESHOLDDECAYPERIOD>
+              <THRESHOLDINC>100</THRESHOLDINC>
+              <MIGRATION>NONE</MIGRATION>
+            </props>
+          </Section>
+          <Link from="W" to="W" policy="WTA">
+            <WEIGHT>10</WEIGHT>
+          </Link>
+          <Link from="W" to="LPLUS" policy="all-to-all" type="excitatory">
+            <!--From WTA to learning layer L-->
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <MAXWEIGHT>5</MAXWEIGHT>
+            <INIWEIGHT Type="DIS">
+              <default>0</default>
+              <value v="2" share="0.5"></value>
+            </INIWEIGHT>
+          </Link>
+          <Link from="W" to="LMINUS" policy="all-to-all" type="excitatory">
+            <!--From WTA to learning layer L-->
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <MAXWEIGHT>5</MAXWEIGHT>
+            <INIWEIGHT Type="DIS">
+              <default>0</default>
+              <value v="2" share="0.5"></value>
+            </INIWEIGHT>
+          </Link>
+          <Link from="MEM" to="LPLUS" policy="all-to-all" type="excitatory">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <MAXWEIGHT>5</MAXWEIGHT>
+            <INIWEIGHT Type="DIS">
+              <default>0</default>
+              <value v="2" share="0.5"></value>
+            </INIWEIGHT>
+          </Link>
+          <Link from="MEM" to="LMINUS" policy="all-to-all" type="excitatory">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <MAXWEIGHT>5</MAXWEIGHT>
+            <INIWEIGHT Type="DIS">
+              <default>0</default>
+              <value v="2" share="0.5"></value>
+            </INIWEIGHT>
+          </Link>
+          <Link from="LPLUS" to="LPLUS" policy="WTA" type="inhibitory">
+            <WEIGHT>100</WEIGHT>
+          </Link>
+          <Link from="LMINUS" to="ACTBLOCK" policy="one-to-one">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>10</WEIGHT>
+            <FIXED></FIXED>
+          </Link>
+          <Link from="ACTBLOCK" to="LPLUS" policy="one-to-one">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>100</WEIGHT>
+          </Link>
+          <Link from="ACTBLOCK" to="EFF" policy="one-to-one">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>100</WEIGHT>
+          </Link>
+          <Link from="LPLUS" to="EFF" policy="one-to-one" type="excitatory">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>10</WEIGHT>
+            <FIXED></FIXED>
+          </Link>
+          <Link from="EFF" to="GATEREW" policy="one-to-one" type="activating">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>100</WEIGHT>
+          </Link>
+          <Link from="EFF" to="GATEPUN" policy="one-to-one" type="activating">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>100</WEIGHT>
+          </Link>
+          <Link from="GATEREW" to="LPLUS" policy="one-to-one" type="reward">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>1</WEIGHT>
+          </Link>
+          <Link from="GATEPUN" to="LMINUS" policy="one-to-one" type="reward">
+            <DELAY Type="UNI">
+              <min>1</min>
+              <max>1</max>
+            </DELAY>
+            <WEIGHT>1</WEIGHT>
+          </Link>
+        </Sections>
+      </args>
+    </Implementation>
+  </Sections>
+  <Readout lib="LightSpotEnvironment">
+    <output>EFF</output>
+  </Readout>
+</Network>  

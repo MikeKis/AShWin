@@ -102,8 +102,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <GenerateMapFile>
-      </GenerateMapFile>
+      <GenerateMapFile>true</GenerateMapFile>
       <ModuleDefinitionFile>LightSpot.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>

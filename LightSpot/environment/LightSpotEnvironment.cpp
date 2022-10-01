@@ -19,7 +19,7 @@ Emulates signal from videocamera looking at a moving light spot.
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 
-#include <sg.h>
+#include <sg/sg.h>
 
 #include "../../AShWinCommon.h"
 #include "../../DVSEmulator/dvsemulator.h"
@@ -74,14 +74,26 @@ class EnvironmentState
 {
 	unique_ptr<shared_memory_object> shm;
 	unique_ptr<mapped_region>        region;
+	string                           strSharedMemoryName;
 public:
 	pair<float, float> *pprr_CameraCenter;
 	pair<float, float> *pprr_SpotCenter = NULL;
 	EnvironmentState() 
 	{
-		shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);
+		strSharedMemoryName = ENVIRONMENT_STATE_SHARED_MEMORY_NAME;
+		bool bExists = true;
+		do {
+			try {
+				//Create a shared memory object.
+				shm.reset(new shared_memory_object(open_only, strSharedMemoryName.c_str(), read_only));
+				++strSharedMemoryName.front();
+			}
+			catch (...) {
+				bExists = false;
+			}
+		} while (bExists);
 		//Create a shared memory object.
-		shm.reset(new shared_memory_object(create_only, ENVIRONMENT_STATE_SHARED_MEMORY_NAME, read_write));
+		shm.reset(new shared_memory_object(create_only, strSharedMemoryName.c_str(), read_write));
 
 		//Set size
 		shm->truncate(sizeof(pair<pair<float, float>, pair<float, float> >));
@@ -90,7 +102,7 @@ public:
 		region.reset(new mapped_region(*shm, read_write));
         pprr_CameraCenter = (pair<float, float> *)region->get_address();
 	}
-	~EnvironmentState()	{shared_memory_object::remove(ENVIRONMENT_STATE_SHARED_MEMORY_NAME);}
+	~EnvironmentState()	{shared_memory_object::remove(strSharedMemoryName.c_str());}
 	double dDistance() const 
 	{
 		return sqrt((pprr_CameraCenter->first - pprr_SpotCenter->first) * (pprr_CameraCenter->first - pprr_SpotCenter->first) + (pprr_CameraCenter->second - pprr_SpotCenter->second) * (pprr_CameraCenter->second - pprr_SpotCenter->second));
@@ -225,8 +237,8 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_Ph
 		double dCameraSpeedNew = dCameraSpeed - dFriction;
 		if (dCameraSpeedNew > 0.) {
 			double d = dCameraSpeedNew / dCameraSpeed;
-			prr_CameraSpeed.first *= d;
-			prr_CameraSpeed.second *= d;
+			prr_CameraSpeed.first *= (float)d;
+			prr_CameraSpeed.second *= (float)d;
 		}
 		else prr_CameraSpeed.first = prr_CameraSpeed.second = 0.F;
 	}
@@ -295,11 +307,11 @@ public:
 		*prec = 0;
 		if (d > dDistanceChangeThreshold) {
 			dCurrentDistance = dNewDistance;
-			if (!bReward())
+			if (!bReward() /* && ntact >= 1000000 */)
 				*prec = 1;
 		} else if (d < -dDistanceChangeThreshold) {
 			dCurrentDistance = dNewDistance;
-			if (bReward())
+			if (bReward() /* && ntact >= 1000000 */)
 				*prec = 1;
 		}
 		if (bReward()) {
