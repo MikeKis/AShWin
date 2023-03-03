@@ -72,5 +72,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     boost_filesystem
     boost_thread
     pthread
+        sfml-window
+        sfml-system
+        sfml-graphics
     rt
 )
