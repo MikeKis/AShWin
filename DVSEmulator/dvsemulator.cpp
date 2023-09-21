@@ -10,44 +10,45 @@ DVSEmulator::DVSEmulator(unsigned Width, unsigned Height, unsigned maxCalibratio
 {
 }
 
-void DVSEmulator::AddFrame(const std::vector<std::vector<unsigned char> > &vvuc_Frame, std::vector<bool> *pvb_SpikeSignal)
+void DVSEmulator::AddFrame(const std::vector<std::vector<unsigned char> > &vvuc_Frame, std::vector<unsigned> *pvfl_SpikeSignal)
 {
-    if (!pvb_SpikeSignal) {
+    if (!pvfl_SpikeSignal) {
         qvvuc_forCalibration.push_back(vvuc_Frame);
         if (qvvuc_forCalibration.size() > maxCalibrationQueueSize)
             qvvuc_forCalibration.pop_front();
     } else {
-        fill(pvb_SpikeSignal->begin(), pvb_SpikeSignal->end(), false);
-        auto i = pvb_SpikeSignal->begin();
+        BitMaskAccess bma;
+        unsigned *pfl = &pvfl_SpikeSignal->front();
         size_t m;
         FOR_(m, vvuc_Frame.size())
             FORI(vvuc_Frame[m].size()) {
                 vvd_StateBrightness[m][_i] += vvuc_Frame[m][_i];
                 if (vvd_StateBrightness[m][_i] >= dBrightnessThreshold) {
-                    *i = true;
+                    pfl |= bma;
                     vvd_StateBrightness[m][_i] -= dBrightnessThreshold;
                 }
-                ++i;
+                ++bma;
             }
         if (vvuc_CurrentState.empty())
             vvuc_CurrentState = vvuc_Frame;
         else {
-            auto Decrease = i + vvuc_Frame.size() * vvuc_Frame.front().size();
+            BitMaskAccess bmaDecrease = bma;
+            bmaDecrease += vvuc_Frame.size() * vvuc_Frame.front().size();
             FOR_(m, vvuc_Frame.size())
                 FORI(vvuc_Frame[m].size()) {
                     auto n = (unsigned short)vvuc_CurrentState[m][_i] + ucChangeThreshold;
                     if (vvuc_Frame[m][_i] >= n) {
-                        *i = true;
+                        pfl |= bma;
                         vvuc_CurrentState[m][_i] = (unsigned char)n;
                     } else {
                         auto o = (int)vvuc_CurrentState[m][_i] - (int)ucChangeThreshold;
                         if ((int)vvuc_Frame[m][_i] <= o) {
-                            *Decrease = true;
+                            pfl |= bmaDecrease;
                             vvuc_CurrentState[m][_i] = (unsigned char)o;
                         }
                     }
-                    ++i;
-                    ++Decrease;
+                    ++bma;
+                    ++bmaDecrease;
                 }
         }
     }

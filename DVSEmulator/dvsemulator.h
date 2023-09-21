@@ -18,7 +18,7 @@ class DVSEmulator
     std::deque<std::vector<std::vector<unsigned char> > > qvvuc_forCalibration;
 public:
     DVSEmulator(unsigned Width, unsigned Height, unsigned maxCalibrationSize = 30000);
-    void AddFrame(const std::vector<std::vector<unsigned char> > &vvuc_Frame, std::vector<bool> *pvb_SpikeSignal = nullptr);
+    void AddFrame(const std::vector<std::vector<unsigned char> > &vvuc_Frame, std::vector<unsigned> *pvfl_SpikeSignal = nullptr);   // pvfl_SpikeSignal has been zeroed!
     void Calibrate(float rTargetSpikeFrequency);
     void ResetCalibration(){qvvuc_forCalibration.clear();}
     size_t GetSpikeSignalDim() const {return vvd_StateBrightness.size() * vvd_StateBrightness.front().size() * 3;}

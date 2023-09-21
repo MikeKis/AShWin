@@ -74,3 +74,62 @@ template<class T> void avgdis(const T *p, size_t n, double &davg, double &ddis)
 #define FOR_ALL(i,a) for(i=(a).begin();i!=(a).end();i++)
 #define FORI(N) for(UNS64 _i = 0; _i < (UNS64)(N); _i++)
 #define FIND_FIRST(i,a,cond) for(i=(a).begin();i!=(a).end() && !(cond);i++)
+
+template<class T> unsigned short ilog2(T x)
+{
+	unsigned short usret = 0;
+	do {
+		x >>= 1;
+		if (!x)
+			return usret;
+		usret++;
+	} while (1);
+}
+
+class BitMaskAccess
+{
+	size_t ind;
+	size_t fl;
+public:
+	BitMaskAccess()
+	{
+		ind = 0;
+		fl = 1;
+	}
+	BitMaskAccess(size_t a)
+	{
+		fl = 1ULL << (a & 0x3f);
+		ind = a >> 6;
+	}
+	BitMaskAccess operator++()
+	{
+		if (fl != 0x8000000000000000ULL)
+			fl <<= 1;
+		else {
+			fl = 1;
+			++ind;
+		}
+		return *this;
+	}
+	BitMaskAccess operator++(int)
+	{
+		BitMaskAccess bmaold = *this;
+		if (fl != 0x8000000000000000ULL)
+			fl <<= 1;
+		else {
+			fl = 1;
+			ind++;
+		}
+		return bmaold;
+	}
+	BitMaskAccess& operator+=(size_t advance)
+	{
+		size_t a = (ind << 6) + ilog2(fl);
+		*this = BitMaskAccess(a + advance);
+		return *this;
+	}
+	size_t nFullQW() const { return ind; }
+	template<class T> friend bool operator&(const T* p, BitMaskAccess bma) { return (*((const size_t*)p + bma.ind) & bma.fl) != 0; }
+	template<class T> friend void operator|=(T* p, BitMaskAccess bma) { *((size_t*)p + bma.ind) |= bma.fl; }
+	template<class T> friend void operator!=(T* p, BitMaskAccess bma) { *((size_t*)p + bma.ind) &= ~bma.fl; }
+};

@@ -10,32 +10,19 @@
 
 using namespace std;
 
-void DVSMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings)
+string DVSMeanings(int indNeuron, const VECTOR<PAIR<neuron_id, int> > &vp_Synapses)
 {
-	int i = 0;
-	int y, x;
-	for (y = 19; y >= 0; --y)
-		for (x = 0; x < 20; ++x) {
-			stringstream ss;
-			ss << "ABS(" << x << "," << y << ")";
-			vstr_Meanings[i++] = ss.str();
-		}
-	for (y = 19; y >= 0; --y)
-		for (x = 0; x < 20; ++x) {
-			stringstream ss;
-			ss << "INC(" << x << "," << y << ")";
-			vstr_Meanings[i++] = ss.str();
-		}
-	for (y = 19; y >= 0; --y)
-		for (x = 0; x < 20; ++x) {
-			stringstream ss;
-			ss << "DEC(" << x << "," << y << ")";
-			vstr_Meanings[i++] = ss.str();
-		}
+	int type = indNeuron / 400;
+	int y = (indNeuron - type * 400) / 20;
+	int x = indNeuron % 20;
+	stringstream ss;
+	const static char *apch[] = {"ABS", "INC", "DEC"};
+	ss << apch[type] << "(" << x << "," << y << ")";
+	return ss.str();
 }
 
-void RewardMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {vstr_Meanings[0] = "REW";}
-void PunishmentMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings) {vstr_Meanings[0] = "PUN";}
+string RewardMeanings(int indNeuron, const VECTOR<PAIR<neuron_id, int> > &vp_Synapses) {return "REW";}
+string PunishmentMeanings(int indNeuron, const VECTOR<PAIR<neuron_id, int> > &vp_Synapses) {return "PUN";}
 
 void WTAMeanings(const std::vector<std::vector<std::pair<int, int> > > &vvp_Synapses, std::vector<std::string> &vstr_Meanings)
 {
@@ -113,16 +100,16 @@ DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const I
 	auto pilpPoissonLink = inc.pilpCreateProjection(IntersectionLinkProperties::connection_excitatory, &PoissonLink);
 	auto LLLink = xncopy.child("LinkLL");
 	pilpLLLink = inc.pilpCreateProjection(IntersectionLinkProperties::connection_inhibitory, &LLLink);
-	inc.bAddNetwork(Sections);
-	inc.bConnectPopulations("DVS", "L", pilpINPLink);
+	inc.AddNetwork(Sections);
+	inc.ConnectPopulations("DVS", "L", pilpINPLink);
 	inc.DestroyProjection(pilpINPLink);
-	inc.bConnectPopulations("DVS", "SENSORYGATE", pilpINPGATELink);
+	inc.ConnectPopulations("DVS", "SENSORYGATE", pilpINPGATELink);
 	inc.DestroyProjection(pilpINPGATELink);
-	inc.bConnectPopulations("L", "L", GetLinkLL);
+	inc.ConnectPopulations("L", "L", GetLinkLL);
 	inc.DestroyProjection(pilpLLLink);
-	inc.bConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
-	inc.bConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
-	inc.bConnectPopulations("Poisson", "SENSORYGATE", pilpPoissonLink);
+	inc.ConnectPopulations("Reward", "GATEREW", pilpGATELink);   // LPLUSPopulation should be finalized!
+	inc.ConnectPopulations("Punishment", "GATEPUN", pilpGATELink);   // LPLUSPopulation should be finalized!
+	inc.ConnectPopulations("Poisson", "SENSORYGATE", pilpPoissonLink);
 	inc.DestroyProjection(pilpGATELink);
 	inc.DestroyProjection(pilpPoissonLink);
 }
