@@ -249,21 +249,19 @@ void GenerateSignals(vector<vector<unsigned char> > &vvuc_, vector<float> &vr_Ph
 class DYNAMIC_LIBRARY_EXPORTED_CLASS DVSCamera: public IReceptors, public DVSEmulator
 {
 protected:
-	virtual bool bGenerateReceptorSignals(char *prec, size_t neuronstrsize) override
+    virtual bool bGenerateSignals(unsigned *pfl, int bitoffset) override
 	{
+        if (bitoffset)
+            throw std::logic_error("DVS receptors - non-zero bitoffset");
 		vector<vector<unsigned char> > vvuc_;
 		vector<float> vr_PhaseSpacePoint(4);
 		GenerateSignals(vvuc_, vr_PhaseSpacePoint);
 		vector<bool> vb_Spikes(GetSpikeSignalDim());
-		AddFrame(vvuc_, &vb_Spikes);
-		for (auto i: vb_Spikes) {
-			*prec = i;
-			prec += neuronstrsize;
-		}
+        AddFrame(vvuc_, pfl);
 		return true;
 	}
 public:
-	DVSCamera(): IReceptors(CAMERA_SIZE * CAMERA_SIZE * 3, 3), DVSEmulator(CAMERA_SIZE, CAMERA_SIZE) {}
+    DVSCamera(): IReceptors(CAMERA_SIZE * CAMERA_SIZE * 3), DVSEmulator(CAMERA_SIZE, CAMERA_SIZE) {}
 	virtual void Randomize(void) override {rng.Randomize();}
     virtual void SaveStatus(Serializer &ser) const override
     {
@@ -301,29 +299,29 @@ class DYNAMIC_LIBRARY_EXPORTED_CLASS Evaluator: public IReceptors
 	double      dCurrentDistance;
 	int         TargetReachedSpikeCnt;
 public:
-	Evaluator(bool bRew): IReceptors(1, 3), TargetReachedSpikeCnt(bRew ? 0 : -1), dCurrentDistance(es.dDistance()) {}
-	virtual bool bGenerateReceptorSignals(char *prec, size_t neuronstrsize) override
-	{
+    Evaluator(bool bRew): IReceptors(1), TargetReachedSpikeCnt(bRew ? 0 : -1), dCurrentDistance(es.dDistance()) {}
+    virtual bool bGenerateSignals(unsigned *pfl, int bitoffset) override
+    {
 		double dNewDistance = es.dDistance();
 		double d = dNewDistance - dCurrentDistance;
-		*prec = 0;
+        *pfl &= ~(1 << bitoffset);
 		if (d > dDistanceChangeThreshold) {
 			dCurrentDistance = dNewDistance;
 			if (!bReward() /* && ntact >= 1000000 */)
-				*prec = 1;
-		} else if (d < -dDistanceChangeThreshold) {
+                *pfl |= 1 << bitoffset;
+        } else if (d < -dDistanceChangeThreshold) {
 			dCurrentDistance = dNewDistance;
 			if (bReward() /* && ntact >= 1000000 */)
-				*prec = 1;
-		}
+                *pfl |= 1 << bitoffset;
+        }
 		if (bReward()) {
 			if (!(ntact % 200000)) {
 				vn_TactsInside.push_back(0);
 			}
 			if (dNewDistance < dTargetRange) {
 				if (++TargetReachedSpikeCnt == TargetReachedSpikePeriod) {
-					*prec = 1;
-					TargetReachedSpikeCnt = 0;
+                    *pfl |= 1 << bitoffset;
+                    TargetReachedSpikeCnt = 0;
 				}
 				++vn_TactsInside.back();
 			}

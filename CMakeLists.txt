@@ -16,5 +16,5 @@ include_directories(../E/ArNI/sg)
 link_directories(/usr/local/lib) #it is - to find boost!
 
 add_subdirectory(DVSEmulator)
-add_subdirectory(LightSpotPassive)
+#add_subdirectory(LightSpotPassive)
 add_subdirectory(LightSpot)
