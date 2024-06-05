@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 
 project(AShWin)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CUDA_FLAGS "-ccbin g++-6")
 
 include_directories(.)

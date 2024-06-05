@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <type_traits>
 
 #include <NetworkConfigurator.h>
 #include "../../../AShWinCommon.h"
@@ -99,23 +100,22 @@ IntersectionLinkProperties *pilpLLLink;
 
 DYNAMIC_LIBRARY_ENTRY_POINT const IntersectionLinkProperties *GetLinkLL(const euclidean_space_point &espPresynaptic, const euclidean_space_point &espPostsynaptic) {return abs(espPresynaptic[0] - espPostsynaptic[0]) == 0.5 ? pilpLLLink : nullptr;}
 
-DYNAMIC_LIBRARY_ENTRY_POINT void SetParameters(const pugi::xml_node &xn, const INetworkConfigurator &inc)
+NETWORK_SET_PARAMETERS(xn, i)
 { 
     pilpLLLink = inc.pilpCreateProjection(st_fixed);
     pilpLLLink->SetFixedWeight(-100);
-    inc.ConnectPopulations("L", "L", GetLinkLL);
-    auto xncopy = xn;
-	auto Sections = xncopy.child("Sections");
+    auto Sections = xn.child("Sections");
     inc.AddNetwork(Sections);
-	inc.DestroyProjection(pilpLLLink);
+    inc.ConnectPopulations("L", "L", GetLinkLL);
+    inc.DestroyProjection(pilpLLLink);
 }
 
-DYNAMIC_LIBRARY_ENTRY_POINT void SetMeaningDefinitions(vector<pair<const char *, pfnsetmeanings> > &vppchfsm_)
+NETWORK_SET_MEANING_DEFINITION(vppchfsm_)
 {
 	vppchfsm_.clear();
 }
 
-DYNAMIC_LIBRARY_ENTRY_POINT void ProcessTact(unsigned CurrentTact, const INetworkConfigurator &inc)
+DYNAMIC_LIBRARY_ENTRY_POINT void ProcessTact(int CurrentTact, const INetworkConfigurator &inc)
 {
 	/*
 	if (CurrentTact == 1000000) {
