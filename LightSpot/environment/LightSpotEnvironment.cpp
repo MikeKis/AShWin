@@ -20,6 +20,7 @@ Emulates signal from videocamera looking at a moving light spot.
 #include <boost/interprocess/mapped_region.hpp>
 
 #include <sg/sg.h>
+#include <NetworkConfigurator.h>
 
 #include "../../AShWinCommon.h"
 #include "../../DVSEmulator/dvsemulator.h"
@@ -52,8 +53,6 @@ const double dTargetRange = 0.15;
 const int TargetReachedSpikePeriod = 6;
 
 const double dDistanceChangeThreshold = 0.1;
-
-const int NNeuronsperDirection = 13;
 
 class RandomNumberGenerator
 {
@@ -350,7 +349,7 @@ public:
     bool bReward() const {return TargetReachedSpikeCnt != -1;}
 };
 
-LIGHTSPOTENVIRONMENT_EXPORT IReceptors *SetParametersIn(int &nReceptors, const pugi::xml_node &xn)
+RECEPTORS_SET_PARAMETERS(nReceptors, xn)
 {
 	static int CallNo = 0;
 	int x, y;
@@ -408,9 +407,11 @@ LIGHTSPOTENVIRONMENT_EXPORT IReceptors *LoadStatus(Serializer &ser)
     }
 }
 
-LIGHTSPOTENVIRONMENT_EXPORT void SetParametersOut(int ExperimentId, size_t tactTermination, const pugi::xml_node &xn) {}
+int NNeuronsperDirection = 13;
 
-LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing, int nEquilibriumPeriods)
+READOUT_SET_PARAMETERS(ExperimentId, tactTermination, nOutputNeurons, xn) {NNeuronsperDirection = nOutputNeurons / 4;}
+
+READOUT_OBTAIN_SPIKES(v_Firing, nEquilibriumPeriods)
 {
 	for (auto i: v_Firing) {
 		int Direction = i / NNeuronsperDirection;
@@ -428,7 +429,7 @@ LIGHTSPOTENVIRONMENT_EXPORT bool ObtainOutputSpikes(const vector<int> &v_Firing,
 	return true;
 }
 
-LIGHTSPOTENVIRONMENT_EXPORT int Finalize(int OriginalTerminationCode) 
+READOUT_FINALIZE(OriginalTerminationCode)
 {
 	cout << "Tacts inside:\n";
 	for (auto z: vn_TactsInside)
