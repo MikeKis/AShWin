@@ -411,7 +411,7 @@ int NNeuronsperDirection = 13;
 
 READOUT_SET_PARAMETERS(ExperimentId, tactTermination, nOutputNeurons, xn) {NNeuronsperDirection = nOutputNeurons / 4;}
 
-READOUT_OBTAIN_SPIKES(v_Firing, nEquilibriumPeriods)
+READOUT_OBTAIN_SPIKES(v_Firing)
 {
 	for (auto i: v_Firing) {
 		int Direction = i / NNeuronsperDirection;
