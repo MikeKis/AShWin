@@ -102,8 +102,8 @@ DYNAMIC_LIBRARY_ENTRY_POINT const IntersectionLinkProperties *GetLinkLL(const eu
 
 NETWORK_SET_PARAMETERS(xn, i)
 { 
-    pilpLLLink = inc.pilpCreateProjection(st_fixed);
-    pilpLLLink->SetFixedWeight(-100);
+    pilpLLLink = inc.pilpCreateProjection(st_gating);
+    pilpLLLink->SetFixedWeight(-2);
     auto Sections = xn.child("Sections");
     inc.AddNetwork(Sections);
     inc.ConnectPopulations("L", "L", GetLinkLL);
