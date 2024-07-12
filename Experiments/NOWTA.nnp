@@ -1,164 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Network>
+<SNN>
   <Global>0.787686</Global>
   <!--NOT USED-->
-  <Receptors name="DVS" N="1200">
+  <RECEPTORS name="DVS" n="1200">
     <Implementation lib="LightSpotEnvironment"></Implementation>
-  </Receptors>
-  <Receptors name="Punishment" N="1">
+  </RECEPTORS>
+  <RECEPTORS name="Punishment" n="1">
     <Implementation lib="LightSpotEnvironment"></Implementation>
-  </Receptors>
-  <Receptors name="Reward" N="1">
+  </RECEPTORS>
+  <RECEPTORS name="Reward" n="1">
     <Implementation lib="LightSpotEnvironment"></Implementation>
-  </Receptors>
-  <Receptors name="Poisson" N="$(NNEU)">
+  </RECEPTORS>
+  <RECEPTORS name="Poisson" n="$(NNEU)">
     <Implementation lib="fromFile">
-      <args>
-        <Noise>$(NOISE)</Noise>
+      <args type="none">
+        <noise>$(NOISE)</noise>
+        <history_length>30000000</history_length>  <!--JUST VERY LONG-->
       </args>
     </Implementation>
-  </Receptors>
-  <Sections>
+  </RECEPTORS>
+  <NETWORK>
     <Implementation lib="LightSpot">
       <args>
-        <LinkINP>
-          <!--From DVS to L-->
-          <DELAY Type="UNI">
-            <min>1</min>
-            <max>1</max>
-          </DELAY>
-          <MAXWEIGHT>$(MAXINPUTWEIGHT)</MAXWEIGHT>
-          <INIWEIGHT Type="DIS">
-            <default>$(INIINPUTRESOURCE)</default>
-          </INIWEIGHT>
-          <probability>$(INPUTPROBABILITY)</probability>
-        </LinkINP>
-        <LinkINPGATE policy="all-to-all" type="inhibitory">
-          <DELAY Type="UNI">
-            <min>1</min>
-            <max>1</max>
-          </DELAY>
-          <WEIGHT>$(INPGATEWEIGHT)</WEIGHT>
-        </LinkINPGATE>
-        <LinkGATE policy="all-to-all">
-          <!--From Reward/Punishment to ACTGATE-->
-          <DELAY Type="UNI">
-            <min>1</min>
-            <max>1</max>
-          </DELAY>
-          <WEIGHT>10</WEIGHT>
-          <FIXED></FIXED>
-        </LinkGATE>
-        <LinkPoisson policy="one-to-one">
-          <!--From Poisson to SENSORYGATE-->
-          <DELAY Type="UNI">
-            <min>1</min>
-            <max>1</max>
-          </DELAY>
-          <WEIGHT>10</WEIGHT>
-          <FIXED></FIXED>
-        </LinkPoisson>
-        <LinkLL>
-          <DELAY Type="UNI">
-            <min>1</min>
-            <max>1</max>
-          </DELAY>
-          <WEIGHT>100</WEIGHT>
-        </LinkLL>
         <Sections>
-          <Section name="-L">
+          <Section name="L">
             <props>
-              <N>$(NNEU)</N>  <!--4 directions X 10 neurons-->
-              <Structure Type="O" Dimension="4">
-              </Structure>
-              <CHARTIME>$(LCHARTIME)</CHARTIME>
-              <THRESHOLDDECAYPERIOD>$(LTHRESHOLDDECAYPERIOD)</THRESHOLDDECAYPERIOD>
-              <THRESHOLDINC>$(LTHRESHOLDINC)</THRESHOLDINC>
-              <WEIGHTINC>0</WEIGHTINC>
-              <PLASTICITYTIME>$(PLASTICITYTIME)</PLASTICITYTIME>
-              <MIGRATION>SAME_PLACE</MIGRATION>
+              <n>$(NNEU)</n> 
+              <Structure type="O" dimension="4"></Structure>
+              <chartime>$(LCHARTIME)</chartime>
+              <threshold_decay_period>$(THRESHOLDDECAYPERIOD)</threshold_decay_period>
+              <threshold_inc>$(THRESHOLDINC)</threshold_inc>
+              <weight_inc>0</weight_inc>
+              <dopamine_plasticity_time>$(PLASTICITYTIME)</dopamine_plasticity_time>
+              <maxweight>$(MAXINPUTWEIGHT)</maxweight>
+              <migration>SAME_PLACE</migration>
               <!--Inside sub-section!-->
             </props>
           </Section>
-          <Section name="-GATEREW">
+          <Section name="SENSORYGATE">
             <props>
-              <N>4</N>
+              <n>$(NNEU)</n>
+              <chartime>$(SENSORYGATECHARTIME)</chartime>
+            </props>
+          </Section>
+          <Section name="GATEREW">
+            <props>
+              <n>4</n>
               <!--4 directions-->
-              <Structure Type="O" Dimension="4">
-              </Structure>
-              <CHARTIME>$(GATECHARTIME)</CHARTIME>
-              <THRESHOLDDECAYPERIOD>$(GATETHRESHOLDDECAYPERIOD)</THRESHOLDDECAYPERIOD>
-              <THRESHOLDINC>$(GATETHRESHOLDINC)</THRESHOLDINC>
-              <MIGRATION>NONE</MIGRATION>
+              <Structure type="O" dimension="4"></Structure>
+              <chartime>$(GATECHARTIME)</chartime>
+              <threshold_decay_period>$(GATETHRESHOLDDECAYPERIOD)</threshold_decay_period>
+              <threshold_inc>$(GATETHRESHOLDINC)</threshold_inc>
             </props>
           </Section>
-          <Section name="-GATEPUN">
+          <Section name="GATEPUN">
             <props>
-              <N>4</N>
+              <n>4</n>
               <!--4 directions-->
-              <Structure Type="O" Dimension="4">
-              </Structure>
-              <CHARTIME>$(GATECHARTIME)</CHARTIME>
-              <THRESHOLDDECAYPERIOD>$(GATETHRESHOLDDECAYPERIOD)</THRESHOLDDECAYPERIOD>
-              <THRESHOLDINC>$(GATETHRESHOLDINC)</THRESHOLDINC>
-              <MIGRATION>NONE</MIGRATION>
+              <Structure type="O" dimension="4"></Structure>
+              <chartime>$(GATECHARTIME)</chartime>
+              <threshold_decay_period>$(GATETHRESHOLDDECAYPERIOD)</threshold_decay_period>
+              <threshold_inc>$(GATETHRESHOLDINC)</threshold_inc>
             </props>
           </Section>
-          <Section name="+SENSORYGATE">
-            <props>
-              <N>$(NNEU)</N>
-              <!--4 directions X 3 action powers-->
-              <CHARTIME>$(SENSORYGATECHARTIME)</CHARTIME>
-              <THRESHOLDDECAYPERIOD>1</THRESHOLDDECAYPERIOD>
-              <THRESHOLDINC>0</THRESHOLDINC>
-              <MIGRATION>NONE</MIGRATION>
-            </props>
-          </Section>
-          <Link from="L" to="GATEREW" type="activating">
-            <DELAY Type="UNI">
-              <min>1</min>
-              <max>1</max>
-            </DELAY>
-            <WEIGHT>$(ACTIVATIONTIME)</WEIGHT>
-            <probability>1</probability>
+          <Link from="DVS" to="L" type="plastic">
+		  <IniResource type="uni">
+		    <min>$(INIINPUTRESOURCE)</min>
+		    <max>$(INIINPUTRESOURCE)</max>
+		  </IniResource>
+		  <probability>$(INPUTPROBABILITY)</probability>
           </Link>
-          <Link from="L" to="GATEPUN" type="activating">
-            <DELAY Type="UNI">
-              <min>1</min>
-              <max>1</max>
-            </DELAY>
-            <WEIGHT>$(ACTIVATIONTIME)</WEIGHT>
-            <probability>1</probability>
+          <Link from="DVS" to="SENSORYGATE" policy="all-to-all">
+          	<weight>-$(INPGATEWEIGHT)</weight>
           </Link>
-          <Link from="GATEREW" to="L" type="reward">
-            <DELAY Type="UNI">
-              <min>1</min>
-              <max>1</max>
-            </DELAY>
-            <WEIGHT>1</WEIGHT>
-            <probability>1</probability>
+          <Link from="Poisson" to="SENSORYGATE" policy="aligned">
+		  <weight>10</weight>
           </Link>
-          <Link from="GATEPUN" to="L" type="reward">
-            <DELAY Type="UNI">
-              <min>1</min>
-              <max>1</max>
-            </DELAY>
-            <WEIGHT>-$(RELPUNEFFECT)</WEIGHT>
-            <probability>1</probability>
+          <Link from="Punishment" to="GATEPUN" policy="all-to-all">
+          	<weight>10</weight>
           </Link>
-          <Link from="SENSORYGATE" to="L" policy="one-to-one">
-            <DELAY Type="UNI">
-              <min>1</min>
-              <max>1</max>
-            </DELAY>
-            <WEIGHT>10</WEIGHT>
-            <FIXED></FIXED>
+          <Link from="Reward" to="GATEREW" policy="all-to-all">
+          	<weight>10</weight>
+          </Link>
+          <Link from="L" to="GATEREW" type="gating" policy="aligned">
+            <weight>$(ACTIVATIONTIME)</weight>
+          </Link>
+          <Link from="L" to="GATEPUN" type="gating" policy="aligned">
+            <weight>$(ACTIVATIONTIME)</weight>
+          </Link>
+          <Link from="GATEREW" to="L" type="reward" policy="aligned">
+            <weight>1</weight>
+          </Link>
+          <Link from="GATEPUN" to="L" type="reward" policy="aligned">
+            <weight>-$(RELPUNEFFECT)</weight>
+          </Link>
+          <Link from="SENSORYGATE" to="L" policy="aligned">
+            <weight>10</weight>
           </Link>
         </Sections>
       </args>
     </Implementation>
-  </Sections>
+  </NETWORK>
   <Readout lib="LightSpotEnvironment">
     <output>L</output>
   </Readout>
-</Network>  
+</SNN>  
