@@ -5,7 +5,11 @@
 #define NTESTS 3
 
 #define SECOND_TEST_THRESHOLD 1000000
-#define RECOGNIZER   // it should be retained.
+#define RECOGNIZER ""  // it should be retained.
+
+NetworkTestingParams ntpG{EMULATOR, RECOGNIZER, NTESTS, SECOND_TEST_THRESHOLD, NoStructuralCriterion, 1000};   // It is because experiment ID space for GA is 1000-2000. The original experminet ID begins from 0. For local execution it is incremented
+// by 1000. This incremented value is passed through -e option. But in cluster management code this task is registered by the original ID.
+// Logics for CD are different!!
 
 CHROMOSOME_DEFINITION
 {
@@ -99,18 +103,16 @@ double devaluate(int ind, const VECTOR<PAIR<float,VECTOR<PAIR<int,bool> > > > &v
 			ofsTaskLog << "ind" << ind << " - " << EMULATOR << " started at " << boost::posix_time::second_clock::local_time() << std::endl;
 			mutLog.unlock();
 			sprintf(buf + 300, "-T%d", MAXEMULATIONTIME);
-			vstr_argsEmulator.resize(8);
+			vstr_argsEmulator.resize(6);
 			vstr_argsEmulator[0] = ".." FOLDER_SEPARATOR "Experiments";
 			vstr_argsEmulator[1] = buf;
 			vstr_argsEmulator[2] = buf + 300;
-			vstr_argsEmulator[3] = "-S100000";
-			vstr_argsEmulator[4] = "-R";
-			vstr_argsEmulator[5] = "-dS200000";
-			vstr_argsEmulator[6] = "-D100000";
-			vstr_argsEmulator[7] = "-t0-" + str(MAXEMULATIONTIME);
+			vstr_argsEmulator[3] = "-R";
+			vstr_argsEmulator[4] = "-dS200000";
+			vstr_argsEmulator[5] = "-D100000";
 #ifndef USE_CPU
-			sprintf(buf + 100, "-C%d", SelectedDevice);
-			vstr_argsEmulator.push_back(buf + 100);
+//			sprintf(buf + 100, "-C%d", SelectedDevice);
+//			vstr_argsEmulator.push_back(buf + 100);
 #endif
 
 			sum = 0;
@@ -150,7 +152,6 @@ double devaluate(int ind, const VECTOR<PAIR<float,VECTOR<PAIR<int,bool> > > > &v
 			remove(strProtocolFile.c_str());
 			sprintf(buf, "%d.finsave.nns", 1000 + ind);
 			remove(buf);
-			pnTasksDoneonCard[SelectedDevice]++;
 			return(sum / NTESTS);
 		}
 		mutsoc.lock();
@@ -162,7 +163,7 @@ double devaluate(int ind, const VECTOR<PAIR<float,VECTOR<PAIR<int,bool> > > > &v
 		mutLog.lock();
 		ofsTaskLog << "ind" << ind << " - task sent to another cluster node at " << boost::posix_time::second_clock::local_time() << " (device " << SelectedDevice << ")" << endl;
 		mutLog.unlock();
-		int ret = CoordinateCluster(a - SHOULD_BE_LAUNCHED_ON_ANOTHER_NODE, SelectedDevice, ind, vstr_argsEmulator, ssNNC.str(), strLog, pnTasksDoneonCard);
+		int ret = CoordinateCluster(a - SHOULD_BE_LAUNCHED_ON_ANOTHER_NODE, SelectedDevice, ind, vstr_argsEmulator, ssNNC.str(), strLog);
 		if (strLog.length()) {
 			mutsoc.lock();
 			--vpn_ComputingDeviceStatus[SelectedDevice].first;
@@ -170,7 +171,6 @@ double devaluate(int ind, const VECTOR<PAIR<float,VECTOR<PAIR<int,bool> > > > &v
 			mutLog.lock();
 			ofsTaskLog << "ind " << ind << " result: " << ret << endl;
 			ofsTaskLog << strLog << "\n-------------------\n";
-			pnTasksDoneonCard[SelectedDevice]++;
 			mutLog.unlock();
 			return ret;
 		}

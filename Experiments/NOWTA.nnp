@@ -28,8 +28,8 @@
               <n>$(NNEU)</n> 
               <Structure type="O" dimension="4"></Structure>
               <chartime>$(LCHARTIME)</chartime>
-              <threshold_decay_period>$(THRESHOLDDECAYPERIOD)</threshold_decay_period>
-              <threshold_inc>$(THRESHOLDINC)</threshold_inc>
+              <threshold_decay_period>$(LTHRESHOLDDECAYPERIOD)</threshold_decay_period>
+              <threshold_inc>$(LTHRESHOLDINC)</threshold_inc>
               <weight_inc>0</weight_inc>
               <dopamine_plasticity_time>$(PLASTICITYTIME)</dopamine_plasticity_time>
               <maxweight>$(MAXINPUTWEIGHT)</maxweight>
